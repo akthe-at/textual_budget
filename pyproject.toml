@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "kelly-bank"
+version = "0.1.0"
+description = ""
+authors = ["Adam K. <arkelly2@medicine.wisc.edu>"]
+readme = "README.md"
+packages = [{include = "kelly_bank"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+textual-dev = "^1.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

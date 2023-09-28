@@ -1,0 +1,42 @@
+Button {
+     width: 35;
+}
+
+Grid {
+    grid-size: 2;
+    margin: 1;
+    padding: 1;
+    width: 150
+}
+
+Menu {
+    width: auto;
+    align: center middle;
+}
+
+Vertical {
+    align: center middle;
+}
+
+Placeholder {
+    width: 20;
+    height: 30; 
+}
+
+Screen {
+    content-align: center middle;
+    background: $primary-background-darken-1;
+}
+
+.column {
+    width: 1fr;
+}
+
+#tree-view {
+    scrollbar-gutter: stable;
+    overflow: auto;    
+    width: 25%;    
+    height: 90%;            
+    dock: left; 
+    background: $primary-background-darken-2;      
+}
