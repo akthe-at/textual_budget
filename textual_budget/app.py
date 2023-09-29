@@ -1,19 +1,14 @@
-from collections import defaultdict
-
 import pandas as pd
+from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
 from textual.widgets import Button
 from textual_pandas.widgets import DataFrameTable
-
-from kelly_bank.views.budget import BudgetCRUD, BudgetProgress
-from kelly_bank.views.main_screen import HomeScreen
-from kelly_bank.views.stats import SpendingStats
-from kelly_bank.views.upload_screen import (
-    CategorySelection,
-    LabelTransactions,
-    UploadScreen,
-)
+from views.budget import BudgetCRUD, BudgetProgress
+from views.categorize import CategorySelection, LabelTransactions
+from views.main_screen import HomeScreen
+from views.stats import SpendingStats
+from views.upload_screen import UploadScreen
 
 
 class ModesApp(App):
@@ -27,37 +22,18 @@ class ModesApp(App):
         "stats": SpendingStats(),
         "catpicker": CategorySelection(),
     }
-    SCREEN_BUTTON_MAP = defaultdict(
-        None,
-        {
-            "upload": App.push_screen,
-            "categories": App.push_screen,
-            "budget_review": App.push_screen,
-            "budget_crud": App.push_screen,
-            "stats": App.push_screen,
-        },
-    )
-
-    QUIT_BUTTON_MAP = defaultdict(
-        None,
-        {
-            "cancel": App.action_pop_screen,
-            "quit": App.exit,
-        },
-    )
 
     BINDINGS = {
-        ("h", "push_screen('home')", "Home Page"),
+        ("h", "action_push_screen('home')", "Home Page"),
     }
 
     SHOW_TREE = var(True)
 
     def compose(self) -> ComposeResult:
         yield HomeScreen(id="home_screen")
-        yield CategorySelection(id="cat")
 
     def on_mount(self) -> None:
-        self.title = "Kelly Bank"
+        self.title = "Textual Bank"
         self.sub_title = "Home Screen"
 
     def upload_dataframe(self, mode):
@@ -67,23 +43,24 @@ class ModesApp(App):
         table.update_df(df)
         table.cursor_type = next("row")
 
-    def on_button_pressed(
-        self,
-        event: Button.Pressed,
-        SCREEN_BUTTON_MAP: defaultdict[str, callable] = SCREEN_BUTTON_MAP,
-        QUIT_BUTTON_MAP: defaultdict[str, callable] = QUIT_BUTTON_MAP,
-    ) -> None:
-        # write a match case statement
-        match event.button.id:
-            case id_ if id_ in SCREEN_BUTTON_MAP:
-                SCREEN_BUTTON_MAP[id_](self, screen=id_)
-            case id_ if id_ in QUIT_BUTTON_MAP:
-                QUIT_BUTTON_MAP[id_](self)
+    @on(Button.Pressed, ".main.menu")
+    def change_screen(self, event: Button.Pressed):
+        self.push_screen(screen=event.button.id)
 
-## !! BROKEN
-    def on_key_enter(self):
-        if DataFrameTable.RowHighlighted:
-            self.action_push_screen(screen="catpicker")
+    @on(Button.Pressed, "#quit")
+    def quit_buttons(self):
+        self.exit()
+
+    @on(Button.Pressed, "#cancel")
+    def cancel_buttons(self):
+        self.pop_screen()
+
+    def on_data_table_row_selected(self, event: DataFrameTable.RowSelected):
+        self.push_screen("catpicker")
+
+    def on_key(self, event: events.Key) -> None:
+        if event.key == "h":
+            self.push_screen("home")
 
 
 if __name__ == "__main__":

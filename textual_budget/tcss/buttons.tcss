@@ -2,12 +2,18 @@ Button {
      width: 35;
 }
 
+Button CategorySelection {
+    content-align: center middle;
+    width: 20;
+}
+
 Grid {
     grid-size: 2;
     margin: 1;
     padding: 1;
     width: 150
 }
+
 
 Menu {
     width: auto;
@@ -28,6 +34,24 @@ Screen {
     background: $primary-background-darken-1;
 }
 
+CategorySelection {
+    content-align: center middle;
+    width: 100%;
+    height: 50%;
+}
+
+#categories {
+    width: 50%;
+    content-align: center middle;
+}
+
+#dialog {
+    content-align: center middle;
+    width: 50%;
+    height: 50%;
+    background: salmon;
+}
+
 .column {
     width: 1fr;
 }
@@ -39,4 +63,7 @@ Screen {
     height: 90%;            
     dock: left; 
     background: $primary-background-darken-2;      
+}
+
+.main.menu {
 }
