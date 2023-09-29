@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "kelly-bank"
+name = "textual_budget"
 version = "0.1.0"
 description = ""
 authors = ["Adam K. <arkelly2@medicine.wisc.edu>"]
 readme = "README.md"
-packages = [{include = "kelly_bank"}]
+packages = [{include = "textual_budget"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
