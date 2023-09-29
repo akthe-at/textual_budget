@@ -1,3 +1,4 @@
+from model.model import Model
 from textual.widgets import OptionList
 from views.budget import BudgetCRUD, BudgetProgress
 from views.categorize import CategorySelection, LabelTransactions
@@ -27,7 +28,7 @@ CATEGORY_OPTIONS = OptionList(
 SCREENS = {
     "upload": UploadScreen(),
     "home": HomeScreen(),
-    "categories": LabelTransactions(),
+    "categories": LabelTransactions(model=Model),
     "budget_review": BudgetProgress(),
     "budget_crud": BudgetCRUD(),
     "stats": SpendingStats(),
@@ -35,5 +36,5 @@ SCREENS = {
 }
 
 BINDINGS = {
-        ("h", "action_push_screen('home')", "Home Page"),
-    }
+    ("h", "action_push_screen('home')", "Home Page"),
+}

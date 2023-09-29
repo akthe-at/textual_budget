@@ -52,17 +52,7 @@ class Controller(App):
     @on(Button.Pressed, "#upload_transactions")
     def on_upload_dataframe(self, event: Button.Pressed):
         filepath = Path(self.query_one("#file_name").value)
-        print(f"At Controller - Event: {event}")
-        print(f"At Controller - filepath {filepath}")
         self.data_handler.upload_dataframe(event, filepath)
-
-    #! Come back to here and try to get implementation correct.
-    @on(Button.Pressed, "#categories")
-    def load_transactions(self):
-        table = self.query_one(DataFrameTable)
-        table.cursor_type = "row"
-        df = model.get_all_accounts()
-        table.add_df(df)
 
 
 @dataclass
