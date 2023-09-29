@@ -29,7 +29,7 @@ class Controller(App):
         self.title = "Textual Bank"
         self.sub_title = "Home Screen"
 
-    @on(Button.Pressed, ".main.menu")
+    @on(Button.Pressed, ".mainmenu")
     def change_screen(self, event: Button.Pressed):
         self.push_screen(screen=event.button.id)
 

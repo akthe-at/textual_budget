@@ -22,7 +22,7 @@ CATEGORY_OPTIONS = OptionList(
     "Savings",
     "Student Loans",
     "Eating Out",
-    id="categories",
+    id="category_list",
 )
 
 SCREENS = {

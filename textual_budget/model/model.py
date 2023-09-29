@@ -22,7 +22,13 @@ class Model:
         df = pd.read_csv(filepath)
         df = df.assign(Processed="No")
         df.to_sql("MyAccounts", con=self.con, if_exists="replace", index=False)
+        return True
 
     def get_all_accounts(self, con=con):
-        df = pd.read_sql("SELECT * FROM MyAccounts WHERE Processed = 'No'", con=con)
+        df = pd.read_sql(
+            """
+                         SELECT AccountType, "Posted Date", Amount, Description, "Check Number", Category, Balance, and Processed FROM MyAccounts WHERE Processed = 'No'
+                         """,
+            con=con,
+        )
         return df
