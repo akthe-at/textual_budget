@@ -28,13 +28,13 @@ class Model:
         df.to_sql("MyAccounts", con=self.con, if_exists="replace", index=False)
         return True
 
-    def update_category(self, category: str, row: str):
-        ### Update the Category column with the new category value
-        self.cursor.execute(
-            "UPDATE MyAccounts SET Category = ? WHERE rowid = ?", (category, row)
-        )
-        self.con.commit()
-        return True
+    # def update_category(self, category: str, row: str):
+    #     ### Update the Category column with the new category value
+    #     self.cursor.execute(
+    #         "UPDATE MyAccounts SET Category = ? WHERE rowid = ?", (category, row)
+    #     )
+    #     self.con.commit()
+    #     return True
 
     def get_all_accounts(self, con=con):
         df = pd.read_sql(
