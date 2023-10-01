@@ -7,6 +7,8 @@ import pandas as pd
 
 @dataclass
 class Model:
+    """Data model for the application."""
+
     db_path: str = (
         "C:/Users/ARK010/Documents/textual_budget/textual_budget/model/dev.db"
     )
@@ -14,6 +16,7 @@ class Model:
     cursor: Cursor = con.cursor()
 
     def upload_dataframe(self, filepath):
+        """Upload a csv file to the database."""
         df = pd.read_csv(filepath)
         df = (
             df.assign(Processed="No")
@@ -28,15 +31,43 @@ class Model:
         df.to_sql("MyAccounts", con=self.con, if_exists="replace", index=False)
         return True
 
-    # def update_category(self, category: str, row: str):
-    #     ### Update the Category column with the new category value
-    #     self.cursor.execute(
-    #         "UPDATE MyAccounts SET Category = ? WHERE rowid = ?", (category, row)
-    #     )
-    #     self.con.commit()
-    #     return True
+    def update_category(
+        self,
+        category: str,
+        old_category: str,
+        description: str,
+        posted_date: str,
+        amount: float,
+        balance: float,
+    ):
+        """Update the category of a transaction."""
+        self.cursor.execute(
+            """UPDATE MyAccounts 
+             SET Category = ?, Processed = 'Yes'
+             WHERE Category = ? 
+             AND Description = ?
+             AND PostedDate = ?
+             AND Amount = ?
+             AND Balance = ?
+             """,
+            (
+                category,
+                old_category,
+                description,
+                posted_date,
+                amount,
+                balance,
+            ),
+        )
+        try:
+            self.con.commit()
+        except Exception:
+            self.con.rollback()
+        self.con.close()
+        return True
 
-    def get_all_accounts(self, con=con):
+    def get_unprocessed_transactions(self, con=con):
+        """Get all accounts from the database."""
         df = pd.read_sql(
             """
             SELECT 

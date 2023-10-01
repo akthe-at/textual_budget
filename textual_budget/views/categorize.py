@@ -61,6 +61,6 @@ class LabelTransactions(Screen):
         self.sub_title = "Monitor Income/Expenditure Transactions"
         table = self.query_one(DataFrameTable)
         table.cursor_type = "row"
-        df = self.model.get_all_accounts(self)
+        df = self.model.get_unprocessed_transactions(self)
         table.add_df(df)
         table.focus()
