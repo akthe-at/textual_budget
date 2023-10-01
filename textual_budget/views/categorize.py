@@ -37,13 +37,13 @@ class CategorySelection(ModalScreen):
             classes="modal",
         )
 
-    @on(Select.Changed)
+    @on(
+        Select.Changed
+    )  #! Move new_category capture to App level to pass to DataHandler?
     def investigate_options(self, event: Select.Changed):
         """When an option is selected, set the current category and focus on the accept button."""  # noqa: E501
         self.new_category = event.value
-        print(event.value)
         self.query_one("#accept").focus()
-        event.stop()
 
 
 class LabelTransactions(Screen):
