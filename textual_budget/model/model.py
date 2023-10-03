@@ -18,15 +18,11 @@ class Model:
     def upload_dataframe(self, filepath):
         """Upload a csv file to the database."""
         df = pd.read_csv(filepath)
-        df = (
-            df.assign(Processed="No")
-            .rename(
-                columns={
-                    "Posted Date": "PostedDate",
-                    "Check Number": "CheckNumber",
-                }
-            )
-            .drop(columns="Unnamed: 10")
+        df = df.assign(Processed="No").rename(
+            columns={
+                "Posted Date": "PostedDate",
+                "Check Number": "CheckNumber",
+            }
         )
         df.to_sql("MyAccounts", con=self.con, index=False, if_exists="replace")
         return True

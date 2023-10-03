@@ -68,11 +68,11 @@ class Controller(App):
     @on(Button.Pressed, "#accept")
     def on_accept(self):
         """Send category and row to DataHandler for updating the database."""
-        self.table_selection = self.query_one(DataTable)
         success = self.data_handler.update_category(
             new_category=self.new_category, row=self.current_row_selected
         )
         if success:
+            self.table_selection = self.query_one(DataTable, "#data_table")
             self.table_selection.update_cell(
                 row_key=self.current_row_key,
                 column_key="Category",
@@ -112,6 +112,3 @@ if __name__ == "__main__":
     data_handler = DataHandler(model)
     app = Controller(model, data_handler)
     app.run()
-
-
-# self.current_cursor_coordinate = event.data_table.cursor_coordinate
