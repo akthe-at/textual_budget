@@ -1,11 +1,11 @@
 from constants_cat import SELECT_OPTIONS
-from model.model import Model
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical
+from textual.message import Message
 from textual.screen import ModalScreen, Screen
 from textual.widgets import Button, Footer, Header, Label, Select
-from textual_pandas.widgets import DataFrameTable
+from textual_pandas.widgets import DataTable
 
 
 class CategorySelection(ModalScreen):
@@ -37,30 +37,31 @@ class CategorySelection(ModalScreen):
             classes="modal",
         )
 
-    @on(
-        Select.Changed
-    )  #! Move new_category capture to App level to pass to DataHandler?
-    def investigate_options(self, event: Select.Changed):
-        """When an option is selected, set the current category and focus on the accept button."""  # noqa: E501
-        self.new_category = event.value
-        self.query_one("#accept").focus()
+    def on_mount(self) -> None:
+        self.sub_title = "Select Category"
+        self.query_one("#category_list").expanded = True
 
 
 class LabelTransactions(Screen):
-    def __init__(self, model: Model):
+    def __init__(self):
         super().__init__()
-        self.model = model
+
+    class TableMounted(Message):
+        """Message to let app know that the datatable was mounted"""
+
+        def __init__(self, table: DataTable):
+            self.table = table
+            super().__init__()
 
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()
         yield Button(label="Go Back", variant="warning", id="home")
-        yield DataFrameTable()
+        yield DataTable(id="data_table")
 
     def on_mount(self) -> None:
         self.sub_title = "Monitor Income/Expenditure Transactions"
-        table = self.query_one(DataFrameTable)
-        table.cursor_type = "row"
-        df = self.model.get_unprocessed_transactions(self)
-        table.add_df(df)
-        table.focus()
+        self.table = self.query_one(DataTable)
+        self.table.cursor_type = "row"
+        self.post_message(self.TableMounted(self.table))
+        self.table.focus()

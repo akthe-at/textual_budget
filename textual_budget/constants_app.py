@@ -8,7 +8,7 @@ from views.upload_screen import UploadScreen
 SCREENS = {
     "upload": UploadScreen,
     "home": HomeScreen,
-    "categories": LabelTransactions(model=Model),
+    "categories": LabelTransactions,
     "budget_review": BudgetProgress,
     "budget_crud": BudgetCRUD,
     "stats": SpendingStats,

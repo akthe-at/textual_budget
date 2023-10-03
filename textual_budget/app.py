@@ -1,23 +1,24 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from constants_app import BINDINGS, SCREENS
+from data_handler import DataHandler
 from model.model import Model
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
-from textual.widgets import Button, OptionList
-from textual_pandas.widgets import DataFrameTable
-from views.categorize import CategorySelection
+from textual.widgets import Button, Select
+from textual_pandas.widgets import DataTable
+from views.categorize import CategorySelection, LabelTransactions
 from views.main_screen import HomeScreen
-
-from constants_app import BINDINGS, SCREENS
 
 
 class Controller(App):
-    def __init__(self, model: Model):
+    def __init__(self, model: Model, data_handler: DataHandler):
         super().__init__()
         self.model = model
-        self.data_handler = DataHandler(self, model)
+        self.data_handler = data_handler
+        self.table_selection: DataTable = None
 
     CSS_PATH = "tcss/buttons.tcss"
     SCREENS = SCREENS
@@ -35,21 +36,28 @@ class Controller(App):
         if event.key == "h":
             self.push_screen("home")
 
-    @on(Button.Pressed, ".mainmenu")
-    def change_screen(self, event: Button.Pressed):
-        """Pushes a new screen based on button pressed while on the main menu only."""
-        self.push_screen(screen=event.button.id)
-        # self.query_one("#category_list")
+    @on(LabelTransactions.TableMounted)
+    def get_data_for_table(self, event: LabelTransactions.TableMounted):
+        unprocessed_data = self.data_handler.query_transactions_from_db()
+        event.table.add_columns(*unprocessed_data[0])
+        event.table.add_rows(unprocessed_data[1:])
 
-    @on(Button.Pressed, "#quit")
-    def quit_buttons(self):
-        """Closes the application for any buttons with the id of quit."""
-        self.exit()
-
-    @on(DataFrameTable.RowSelected)
-    def on_data_table_row_selected(self, event: DataFrameTable.RowSelected):
+    @on(DataTable.RowSelected)
+    def on_data_table_row_selected(self, event: DataTable.RowSelected):
         """Prompt the user to select a category for the selected cell."""
         self.push_screen(CategorySelection(event.data_table.get_row(event.row_key)))
+        self.table_selection = event.data_table
+        self.current_row_selected = event.data_table.get_row(event.row_key)
+        self.old_category = self.current_row_selected[4]
+        self.old_processed = self.current_row_selected[6]
+        self.current_row_key = event.row_key
+
+    @on(Select.Changed)
+    def investigate_options(self, event: Select.Changed):
+        """When an option is selected, set the current category
+        and set focus on the accept button."""  # noqa: E501
+        self.new_category = event.value
+        self.query_one("#accept").focus()
 
     @on(Button.Pressed, "#upload_transactions")
     def on_upload_dataframe(self, event: Button.Pressed):
@@ -58,42 +66,52 @@ class Controller(App):
         self.data_handler.upload_dataframe(event, filepath)
 
     @on(Button.Pressed, "#accept")
-    def on_accept(self, event: Button.Pressed):
+    def on_accept(self):
         """Send category and row to DataHandler for updating the database."""
-        # self.data_handler.update_category( # ! Method Not Implemented Yet
-        #     category=self.current_category, row=self.current_row_selected
-        # )
+        self.table_selection = self.query_one(DataTable)
+        success = self.data_handler.update_category(
+            new_category=self.new_category, row=self.current_row_selected
+        )
+        if success:
+            self.table_selection.update_cell(
+                row_key=self.current_row_key,
+                column_key="Category",
+                value=self.new_category,
+            )
+            self.table_selection.update_cell(
+                row_key=self.current_row_key,
+                column_key="Processed",
+                value="Yes",
+            )
+            self.table_selection.refresh_row(
+                self.table_selection.get_row_index(self.current_row_key)
+            )
         self.pop_screen()
 
     @on(Button.Pressed, "#cancel")
     def cancel_buttons(self):
         self.pop_screen()
 
-    def on_option_list_option_selected(self, event: OptionList.OptionSelected):
-        self.current_category = event.option
-        self.query_one("#accept").focus()
+    @on(Button.Pressed, "#categories")
+    def on_categories(self, event: Button.Pressed):
+        self.push_screen("categories")
 
+    @on(Button.Pressed, ".mainmenu")
+    def change_screen(self, event: Button.Pressed):
+        """Pushes a new screen based on button pressed while on the main menu only."""
+        self.push_screen(screen=event.button.id)
 
-@dataclass
-class DataHandler:
-    """An interface between the Model and the Controller"""
-
-    controller: Controller
-    model: Model
-
-    def upload_dataframe(self, event, filepath: str):
-        success = self.model.upload_dataframe(filepath)
-        if success:
-            print("success!")
-
-    # def update_category(self, category: OptionList.OptionSelected, row):
-    #     print(category)
-    #     success = self.model.update_category(category, row=row)
-    #     if success:
-    #         print("successfully updated the category")
+    @on(Button.Pressed, "#quit")
+    def quit_buttons(self):
+        """Closes the application for any buttons with the id of quit."""
+        self.exit()
 
 
 if __name__ == "__main__":
     model = Model()
-    app = Controller(model)
+    data_handler = DataHandler(model)
+    app = Controller(model, data_handler)
     app.run()
+
+
+# self.current_cursor_coordinate = event.data_table.cursor_coordinate

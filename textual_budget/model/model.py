@@ -1,5 +1,5 @@
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from sqlite3 import Connection, Cursor
 
 import pandas as pd
@@ -28,7 +28,7 @@ class Model:
             )
             .drop(columns="Unnamed: 10")
         )
-        df.to_sql("MyAccounts", con=self.con, if_exists="replace", index=False)
+        df.to_sql("MyAccounts", con=self.con, index=False, if_exists="replace")
         return True
 
     def update_category(
@@ -41,15 +41,17 @@ class Model:
         balance: float,
     ):
         """Update the category of a transaction."""
+        # con: Connection = sqlite3.connect(self.db_path)
+        # cursor = con.cursor()
         self.cursor.execute(
             """UPDATE MyAccounts 
-             SET Category = ?, Processed = 'Yes'
-             WHERE Category = ? 
-             AND Description = ?
-             AND PostedDate = ?
-             AND Amount = ?
-             AND Balance = ?
-             """,
+            SET Category = ?, Processed = 'Yes'
+            WHERE Category = ? 
+            AND Description = ?
+            AND PostedDate = ?
+            AND Amount = ?
+            AND Balance = ?
+            """,
             (
                 category,
                 old_category,
@@ -63,25 +65,28 @@ class Model:
             self.con.commit()
         except Exception:
             self.con.rollback()
-        self.con.close()
+            print("FAILED TO UPDATE CATEGORY")
         return True
 
-    def get_unprocessed_transactions(self, con=con):
-        """Get all accounts from the database."""
-        df = pd.read_sql(
+    def get_unprocessed_transactions(self):
+        """Retrieve all unprocessed records from database."""
+
+        # con: Connection = sqlite3.connect(self.db_path)
+        # cursor: Cursor = con.cursor()
+        self.cursor.execute(
             """
-            SELECT 
-                AccountType, 
-                PostedDate, 
-                Amount, 
-                Description, 
-                Category, 
-                Balance, 
-                Processed
-            FROM MyAccounts 
-            WHERE Processed = 'No'
-            ORDER BY PostedDate DESC
-            """,
-            con=con,
+SELECT
+    AccountType, 
+    PostedDate, 
+    Amount, 
+    Description, 
+    Category, 
+    Balance, 
+    Processed
+FROM MyAccounts 
+WHERE Processed = 'No'
+ORDER BY PostedDate DESC
+"""
         )
-        return df
+        unprocessed_data = self.cursor.fetchall()
+        return unprocessed_data
