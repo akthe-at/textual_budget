@@ -9,6 +9,9 @@ packages = [{include = "textual_budget"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 textual-dev = "^1.2.1"
+textual = "^0.38.1"
+
+
 
 
 [build-system]

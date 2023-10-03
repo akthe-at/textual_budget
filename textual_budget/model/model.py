@@ -1,5 +1,5 @@
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from sqlite3 import Connection, Cursor
 
 import pandas as pd
@@ -7,6 +7,8 @@ import pandas as pd
 
 @dataclass
 class Model:
+    """Data model for the application."""
+
     db_path: str = (
         "C:/Users/ARK010/Documents/textual_budget/textual_budget/model/dev.db"
     )
@@ -14,43 +16,73 @@ class Model:
     cursor: Cursor = con.cursor()
 
     def upload_dataframe(self, filepath):
+        """Upload a csv file to the database."""
         df = pd.read_csv(filepath)
-        df = (
-            df.assign(Processed="No")
-            .rename(
-                columns={
-                    "Posted Date": "PostedDate",
-                    "Check Number": "CheckNumber",
-                }
-            )
-            .drop(columns="Unnamed: 10")
+        df = df.assign(Processed="No").rename(
+            columns={
+                "Posted Date": "PostedDate",
+                "Check Number": "CheckNumber",
+            }
         )
-        df.to_sql("MyAccounts", con=self.con, if_exists="replace", index=False)
+        df.to_sql("MyAccounts", con=self.con, index=False, if_exists="replace")
         return True
 
-    def update_category(self, category: str, row: str):
-        ### Update the Category column with the new category value
+    def update_category(
+        self,
+        category: str,
+        old_category: str,
+        description: str,
+        posted_date: str,
+        amount: float,
+        balance: float,
+    ):
+        """Update the category of a transaction."""
+        # con: Connection = sqlite3.connect(self.db_path)
+        # cursor = con.cursor()
         self.cursor.execute(
-            "UPDATE MyAccounts SET Category = ? WHERE rowid = ?", (category, row)
+            """UPDATE MyAccounts 
+            SET Category = ?, Processed = 'Yes'
+            WHERE Category = ? 
+            AND Description = ?
+            AND PostedDate = ?
+            AND Amount = ?
+            AND Balance = ?
+            """,
+            (
+                category,
+                old_category,
+                description,
+                posted_date,
+                amount,
+                balance,
+            ),
         )
-        self.con.commit()
+        try:
+            self.con.commit()
+        except Exception:
+            self.con.rollback()
+            print("FAILED TO UPDATE CATEGORY")
         return True
 
-    def get_all_accounts(self, con=con):
-        df = pd.read_sql(
+    def get_unprocessed_transactions(self):
+        """Retrieve all unprocessed records from database."""
+
+        # con: Connection = sqlite3.connect(self.db_path)
+        # cursor: Cursor = con.cursor()
+        self.cursor.execute(
             """
-            SELECT 
-                AccountType, 
-                PostedDate, 
-                Amount, 
-                Description, 
-                Category, 
-                Balance, 
-                Processed
-            FROM MyAccounts 
-            WHERE Processed = 'No'
-            ORDER BY PostedDate DESC
-            """,
-            con=con,
+SELECT
+    AccountType, 
+    PostedDate, 
+    Amount, 
+    Description, 
+    Category, 
+    Balance, 
+    Processed
+FROM MyAccounts 
+WHERE Processed = 'No'
+ORDER BY PostedDate DESC
+"""
         )
-        return df
+        unprocessed_data = self.cursor.fetchall()
+        return unprocessed_data
