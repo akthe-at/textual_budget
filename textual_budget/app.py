@@ -18,7 +18,6 @@ class Controller(App):
         super().__init__()
         self.model = model
         self.data_handler = data_handler
-        self.table_selection: DataTable = None
 
     CSS_PATH = "tcss/buttons.tcss"
     SCREENS = SCREENS
@@ -42,16 +41,6 @@ class Controller(App):
         event.table.add_columns(*unprocessed_data[0])
         event.table.add_rows(unprocessed_data[1:])
 
-    @on(DataTable.RowSelected)
-    def on_data_table_row_selected(self, event: DataTable.RowSelected):
-        """Prompt the user to select a category for the selected cell."""
-        self.push_screen(CategorySelection(event.data_table.get_row(event.row_key)))
-        self.table_selection = event.data_table
-        self.current_row_selected = event.data_table.get_row(event.row_key)
-        self.old_category = self.current_row_selected[4]
-        self.old_processed = self.current_row_selected[6]
-        self.current_row_key = event.row_key
-
     @on(Select.Changed)
     def investigate_options(self, event: Select.Changed):
         """When an option is selected, set the current category
@@ -64,29 +53,6 @@ class Controller(App):
         """Send filepath to DataHandler for uploading to database."""
         filepath = Path(self.query_one("#file_name").value)
         self.data_handler.upload_dataframe(event, filepath)
-
-    @on(Button.Pressed, "#accept")
-    def on_accept(self):
-        """Send category and row to DataHandler for updating the database."""
-        success = self.data_handler.update_category(
-            new_category=self.new_category, row=self.current_row_selected
-        )
-        if success:
-            self.table_selection = self.query_one(DataTable, "#data_table")
-            self.table_selection.update_cell(
-                row_key=self.current_row_key,
-                column_key="Category",
-                value=self.new_category,
-            )
-            self.table_selection.update_cell(
-                row_key=self.current_row_key,
-                column_key="Processed",
-                value="Yes",
-            )
-            self.table_selection.refresh_row(
-                self.table_selection.get_row_index(self.current_row_key)
-            )
-        self.pop_screen()
 
     @on(Button.Pressed, "#cancel")
     def cancel_buttons(self):
