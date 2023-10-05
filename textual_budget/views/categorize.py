@@ -1,5 +1,5 @@
 from constants_cat import SELECT_OPTIONS
-from textual import on
+from textual import events, on
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical
 from textual.message import Message
@@ -44,11 +44,7 @@ class CategorySelection(ModalScreen):
     @on(Button.Pressed, "#accept")
     def on_accept(self):
         """Send category and row to DataHandler for updating the database."""
-        self.app.data_handler.update_category(
-            new_category=self.app.new_category,
-            row=self.app.table_selection.get_row(self.app.current_row_key),
-        )
-        self.dismiss(self.query_one(Select).value)
+        self.dismiss(result=self.query_one(Select).value)
 
 
 class LabelTransactions(Screen):
@@ -78,24 +74,26 @@ class LabelTransactions(Screen):
     @on(DataTable.RowSelected)
     def on_data_table_row_selected(self, event: DataTable.RowSelected):
         """Prompt the user to select a category for the selected cell."""
+        self.current_row_key = event.row_key
         self.app.push_screen(
-            screen=CategorySelection(event.data_table.get_row(event.row_key)),
+            screen=CategorySelection(
+                row_values=event.data_table.get_row(event.row_key)
+            ),
             callback=self.update_data_table,
         )
-        self.app.table_selection = event.data_table
-        self.app.current_row_key = event.row_key
 
     def update_data_table(self, result: str) -> None:
-        self.app.table_selection.update_cell(
-            row_key=self.app.current_row_key,
+        self.result = result
+        self.query_one(DataTable).update_cell(
+            row_key=self.current_row_key,
             column_key="Category",
             value=result,
         )
-        self.app.table_selection.update_cell(
-            row_key=self.app.current_row_key,
+        self.query_one(DataTable).update_cell(
+            row_key=self.current_row_key,
             column_key="Processed",
             value="Yes",
         )
-        self.app.table_selection.refresh_row(
-            self.app.table_selection.get_row_index(self.app.current_row_key)
+        self.query_one(DataTable).refresh_row(
+            self.query_one(DataTable).get_row_index(self.current_row_key)
         )

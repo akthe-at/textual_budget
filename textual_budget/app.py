@@ -8,7 +8,6 @@ from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
 from textual.widgets import Button, Select
-from textual_pandas.widgets import DataTable
 from views.categorize import CategorySelection, LabelTransactions
 from views.main_screen import HomeScreen
 
@@ -37,6 +36,7 @@ class Controller(App):
 
     @on(LabelTransactions.TableMounted)
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
+        """Query the database for all unprocessed transactions and add them to the table."""
         unprocessed_data = self.data_handler.query_transactions_from_db()
         event.table.add_columns(*unprocessed_data[0])
         event.table.add_rows(unprocessed_data[1:])
@@ -59,7 +59,7 @@ class Controller(App):
         self.pop_screen()
 
     @on(Button.Pressed, "#categories")
-    def on_categories(self, event: Button.Pressed):
+    def on_categories(self):
         self.push_screen("categories")
 
     @on(Button.Pressed, ".mainmenu")
@@ -72,6 +72,12 @@ class Controller(App):
         """Closes the application for any buttons with the id of quit."""
         self.exit()
 
+
+# self.app.data_handler.update_category(new_category=self.app.new_category, row=self.app.table_selection.get_row(self.app.current_row_key),)
+# self.app.data_handler.update_category(
+#             new_category=result,
+#             row=self.table.get_row(self.current_row_key),
+#         )
 
 if __name__ == "__main__":
     model = Model()
