@@ -58,6 +58,15 @@ class LabelTransactions(Screen):
             self.table = table
             super().__init__()
 
+    class CategoryAccepted(Message):
+        """Message to let app know that a category was accepted"""
+
+        def __init__(self, category: str, row_key, table: DataTable):
+            self.category = category
+            self.row_key = row_key
+            self.table = table
+            super().__init__()
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()
@@ -84,16 +93,12 @@ class LabelTransactions(Screen):
 
     def update_data_table(self, result: str) -> None:
         self.result = result
-        self.query_one(DataTable).update_cell(
-            row_key=self.current_row_key,
-            column_key="Category",
-            value=result,
+        self.post_message(
+            self.CategoryAccepted(
+                category=result, row_key=self.current_row_key, table=self.table
+            )
         )
-        self.query_one(DataTable).update_cell(
-            row_key=self.current_row_key,
-            column_key="Processed",
-            value="Yes",
-        )
-        self.query_one(DataTable).refresh_row(
-            self.query_one(DataTable).get_row_index(self.current_row_key)
-        )
+
+        # .refresh_row(
+        #     self.query_one(DataTable).get_row_index(self.current_row_key)
+        # )

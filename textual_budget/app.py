@@ -38,8 +38,16 @@ class Controller(App):
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
         """Query the database for all unprocessed transactions and add them to the table."""
         unprocessed_data = self.data_handler.query_transactions_from_db()
-        event.table.add_columns(*unprocessed_data[0])
-        event.table.add_rows(unprocessed_data[1:])
+        event.table.add_columns(
+            "AccountType",
+            "PostedDate",
+            "Amount",
+            "Description",
+            "Category",
+            "Balance",
+            "Processed",
+        )
+        event.table.add_rows(unprocessed_data[0:])
 
     @on(Select.Changed)
     def investigate_options(self, event: Select.Changed):
@@ -72,12 +80,25 @@ class Controller(App):
         """Closes the application for any buttons with the id of quit."""
         self.exit()
 
+    @on(LabelTransactions.CategoryAccepted)
+    def update_data_table(self, event: LabelTransactions.CategoryAccepted):
+        """Update the category of the selected row in the database."""
+        self.data_handler.update_category(
+            new_category=event.category,
+            row=event.table.get_row(event.row_key),
+        )
+        event.table.update_cell(
+            row_key=event.row_key,
+            column_key="Category",
+            value=event.category,
+        )
+        event.table.update_cell(
+            row_key=event.row_key,
+            column_key="Processed",
+            value="Yes",
+        )
+        event.table.remove_row(event.row_key)
 
-# self.app.data_handler.update_category(new_category=self.app.new_category, row=self.app.table_selection.get_row(self.app.current_row_key),)
-# self.app.data_handler.update_category(
-#             new_category=result,
-#             row=self.table.get_row(self.current_row_key),
-#         )
 
 if __name__ == "__main__":
     model = Model()
