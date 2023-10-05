@@ -41,6 +41,11 @@ class CategorySelection(ModalScreen):
         self.sub_title = "Select Category"
         self.query_one("#category_list").expanded = True
 
+    @on(Button.Pressed, "#accept")
+    def on_accept(self):
+        """Send category and row to DataHandler for updating the database."""
+        self.dismiss(result=self.query_one(Select).value)
+
 
 class LabelTransactions(Screen):
     def __init__(self):
@@ -50,6 +55,15 @@ class LabelTransactions(Screen):
         """Message to let app know that the datatable was mounted"""
 
         def __init__(self, table: DataTable):
+            self.table = table
+            super().__init__()
+
+    class CategoryAccepted(Message):
+        """Message to let app know that a category was accepted"""
+
+        def __init__(self, category: str, row_key, table: DataTable):
+            self.category = category
+            self.row_key = row_key
             self.table = table
             super().__init__()
 
@@ -65,3 +79,22 @@ class LabelTransactions(Screen):
         self.table.cursor_type = "row"
         self.post_message(self.TableMounted(self.table))
         self.table.focus()
+
+    @on(DataTable.RowSelected)
+    def on_data_table_row_selected(self, event: DataTable.RowSelected):
+        """Prompt the user to select a category for the selected cell."""
+        self.current_row_key = event.row_key
+        self.app.push_screen(
+            screen=CategorySelection(
+                row_values=event.data_table.get_row(event.row_key)
+            ),
+            callback=self.update_data_table,
+        )
+
+    def update_data_table(self, result: str) -> None:
+        """Send a message to controller to update the category of the selected cell."""
+        self.post_message(
+            self.CategoryAccepted(
+                category=result, row_key=self.current_row_key, table=self.table
+            )
+        )

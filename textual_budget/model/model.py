@@ -1,10 +1,11 @@
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from sqlite3 import Connection, Cursor
 
 import pandas as pd
 
 
+# TODO: Add Message from App to Model to close DataBase connection on App exit.
 @dataclass
 class Model:
     """Data model for the application."""
@@ -37,8 +38,6 @@ class Model:
         balance: float,
     ):
         """Update the category of a transaction."""
-        # con: Connection = sqlite3.connect(self.db_path)
-        # cursor = con.cursor()
         self.cursor.execute(
             """UPDATE MyAccounts 
             SET Category = ?, Processed = 'Yes'
@@ -66,9 +65,6 @@ class Model:
 
     def get_unprocessed_transactions(self):
         """Retrieve all unprocessed records from database."""
-
-        # con: Connection = sqlite3.connect(self.db_path)
-        # cursor: Cursor = con.cursor()
         self.cursor.execute(
             """
 SELECT

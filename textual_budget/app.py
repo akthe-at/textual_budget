@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from constants_app import BINDINGS, SCREENS
@@ -8,8 +7,7 @@ from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
 from textual.widgets import Button, Select
-from textual_pandas.widgets import DataTable
-from views.categorize import CategorySelection, LabelTransactions
+from views.categorize import LabelTransactions
 from views.main_screen import HomeScreen
 
 
@@ -18,7 +16,6 @@ class Controller(App):
         super().__init__()
         self.model = model
         self.data_handler = data_handler
-        self.table_selection: DataTable = None
 
     CSS_PATH = "tcss/buttons.tcss"
     SCREENS = SCREENS
@@ -28,6 +25,9 @@ class Controller(App):
     def compose(self) -> ComposeResult:
         yield HomeScreen(id="home_screen")
 
+    ####################################################################################
+    ############### Event Handlers Below, Class Definitions above ######################
+    ####################################################################################
     def on_mount(self) -> None:
         self.title = "Textual Bank"
         self.sub_title = "Home Screen"
@@ -38,24 +38,22 @@ class Controller(App):
 
     @on(LabelTransactions.TableMounted)
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
+        """Query the DB for all unprocessed transactions and add them to the table."""
         unprocessed_data = self.data_handler.query_transactions_from_db()
-        event.table.add_columns(*unprocessed_data[0])
-        event.table.add_rows(unprocessed_data[1:])
-
-    @on(DataTable.RowSelected)
-    def on_data_table_row_selected(self, event: DataTable.RowSelected):
-        """Prompt the user to select a category for the selected cell."""
-        self.push_screen(CategorySelection(event.data_table.get_row(event.row_key)))
-        self.table_selection = event.data_table
-        self.current_row_selected = event.data_table.get_row(event.row_key)
-        self.old_category = self.current_row_selected[4]
-        self.old_processed = self.current_row_selected[6]
-        self.current_row_key = event.row_key
+        self.transaction_columns = event.table.add_columns(
+            "AccountType",
+            "PostedDate",
+            "Amount",
+            "Description",
+            "Category",
+            "Balance",
+            "Processed",
+        )
+        event.table.add_rows(unprocessed_data[0:])
 
     @on(Select.Changed)
     def investigate_options(self, event: Select.Changed):
-        """When an option is selected, set the current category
-        and set focus on the accept button."""  # noqa: E501
+        """When an option is selected, set category & set focus on the accept button."""
         self.new_category = event.value
         self.query_one("#accept").focus()
 
@@ -65,35 +63,12 @@ class Controller(App):
         filepath = Path(self.query_one("#file_name").value)
         self.data_handler.upload_dataframe(event, filepath)
 
-    @on(Button.Pressed, "#accept")
-    def on_accept(self):
-        """Send category and row to DataHandler for updating the database."""
-        success = self.data_handler.update_category(
-            new_category=self.new_category, row=self.current_row_selected
-        )
-        if success:
-            self.table_selection = self.query_one(DataTable, "#data_table")
-            self.table_selection.update_cell(
-                row_key=self.current_row_key,
-                column_key="Category",
-                value=self.new_category,
-            )
-            self.table_selection.update_cell(
-                row_key=self.current_row_key,
-                column_key="Processed",
-                value="Yes",
-            )
-            self.table_selection.refresh_row(
-                self.table_selection.get_row_index(self.current_row_key)
-            )
-        self.pop_screen()
-
     @on(Button.Pressed, "#cancel")
     def cancel_buttons(self):
         self.pop_screen()
 
     @on(Button.Pressed, "#categories")
-    def on_categories(self, event: Button.Pressed):
+    def on_categories(self):
         self.push_screen("categories")
 
     @on(Button.Pressed, ".mainmenu")
@@ -105,6 +80,26 @@ class Controller(App):
     def quit_buttons(self):
         """Closes the application for any buttons with the id of quit."""
         self.exit()
+
+    @on(LabelTransactions.CategoryAccepted)
+    def update_data_table(self, event: LabelTransactions.CategoryAccepted):
+        """Update the category of the selected row in the database."""
+        self.data_handler.update_category(
+            new_category=event.category,
+            row=event.table.get_row(event.row_key),
+        )
+        event.table.update_cell(
+            row_key=event.row_key,
+            column_key=self.transaction_columns[4],
+            value=event.category,
+        )
+        event.table.update_cell(
+            row_key=event.row_key,
+            column_key=self.transaction_columns[6],
+            value="Yes",
+        )
+        # TODO: Do I want to add a keybindind to remove rows from the table?
+        # event.table.remove_row(event.row_key)
 
 
 if __name__ == "__main__":
