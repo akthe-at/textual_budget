@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from constants_app import BINDINGS, SCREENS
@@ -8,7 +7,7 @@ from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
 from textual.widgets import Button, Select
-from views.categorize import CategorySelection, LabelTransactions
+from views.categorize import LabelTransactions
 from views.main_screen import HomeScreen
 
 
@@ -26,6 +25,9 @@ class Controller(App):
     def compose(self) -> ComposeResult:
         yield HomeScreen(id="home_screen")
 
+    ####################################################################################
+    ############### Event Handlers Below, Class Definitions above ######################
+    ####################################################################################
     def on_mount(self) -> None:
         self.title = "Textual Bank"
         self.sub_title = "Home Screen"
@@ -36,9 +38,9 @@ class Controller(App):
 
     @on(LabelTransactions.TableMounted)
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
-        """Query the database for all unprocessed transactions and add them to the table."""
+        """Query the DB for all unprocessed transactions and add them to the table."""
         unprocessed_data = self.data_handler.query_transactions_from_db()
-        event.table.add_columns(
+        self.transaction_columns = event.table.add_columns(
             "AccountType",
             "PostedDate",
             "Amount",
@@ -51,8 +53,7 @@ class Controller(App):
 
     @on(Select.Changed)
     def investigate_options(self, event: Select.Changed):
-        """When an option is selected, set the current category
-        and set focus on the accept button."""  # noqa: E501
+        """When an option is selected, set category & set focus on the accept button."""
         self.new_category = event.value
         self.query_one("#accept").focus()
 
@@ -89,15 +90,16 @@ class Controller(App):
         )
         event.table.update_cell(
             row_key=event.row_key,
-            column_key="Category",
+            column_key=self.transaction_columns[4],
             value=event.category,
         )
         event.table.update_cell(
             row_key=event.row_key,
-            column_key="Processed",
+            column_key=self.transaction_columns[6],
             value="Yes",
         )
-        event.table.remove_row(event.row_key)
+        # TODO: Do I want to add a keybindind to remove rows from the table?
+        # event.table.remove_row(event.row_key)
 
 
 if __name__ == "__main__":

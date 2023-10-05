@@ -1,5 +1,5 @@
 from constants_cat import SELECT_OPTIONS
-from textual import events, on
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical
 from textual.message import Message
@@ -92,13 +92,9 @@ class LabelTransactions(Screen):
         )
 
     def update_data_table(self, result: str) -> None:
-        self.result = result
+        """Send a message to controller to update the category of the selected cell."""
         self.post_message(
             self.CategoryAccepted(
                 category=result, row_key=self.current_row_key, table=self.table
             )
         )
-
-        # .refresh_row(
-        #     self.query_one(DataTable).get_row_index(self.current_row_key)
-        # )

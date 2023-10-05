@@ -1,4 +1,3 @@
-from model.model import Model
 from views.budget import BudgetCRUD, BudgetProgress
 from views.categorize import CategorySelection, LabelTransactions
 from views.main_screen import HomeScreen
