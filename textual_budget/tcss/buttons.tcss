@@ -13,10 +13,10 @@ Button {
 
 #dialog {
 background: $accent-lighten-1;
-content-align: center middle;
+content-align: center top;
 width: 50%;
-height: 50%;
-
+height: 90%;
+margin: 2;
 }
 
 #dialog > Button{
@@ -94,13 +94,16 @@ Placeholder {
     align: center middle;
 }
 
-OptionList {
-    background: $accent-darken-2;
-    content-align: center middle;
+#category_list {
+    background: $accent-darken-3;
+    content-align: center top;
+    height: 2fr;
+    color: snow;
 }
 
 .cat_buttons {
-align: center middle;
+align: center bottom;
+margin: 2;
 }
 
 Label {
