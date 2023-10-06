@@ -5,7 +5,6 @@ from sqlite3 import Connection, Cursor
 import pandas as pd
 
 
-# TODO: Add Message from App to Model to close DataBase connection on App exit.
 @dataclass
 class Model:
     """Data model for the application."""
@@ -26,6 +25,11 @@ class Model:
             }
         )
         df.to_sql("MyAccounts", con=self.con, index=False, if_exists="replace")
+        return True
+
+    def close_database_connection(self):
+        """Close the database connection."""
+        self.con.close()
         return True
 
     def update_category(

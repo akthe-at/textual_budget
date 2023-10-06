@@ -37,3 +37,11 @@ class DataHandler:
         if success:
             print("successfully updated the category in the DataBase")
             return True
+
+    def close_database_connection(self):
+        """Close the database connection."""
+        success = self.model.close_database_connection()
+        if success:
+            return True
+        else:
+            print("Failed to close the database connection properly")

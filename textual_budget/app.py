@@ -28,6 +28,7 @@ class Controller(App):
     ####################################################################################
     ############### Event Handlers Below, Class Definitions above ######################
     ####################################################################################
+    
     def on_mount(self) -> None:
         self.title = "Textual Bank"
         self.sub_title = "Home Screen"
@@ -79,6 +80,7 @@ class Controller(App):
     @on(Button.Pressed, "#quit")
     def quit_buttons(self):
         """Closes the application for any buttons with the id of quit."""
+        self.data_handler.close_database_connection()
         self.exit()
 
     @on(LabelTransactions.CategoryAccepted)
