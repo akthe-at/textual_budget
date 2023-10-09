@@ -29,6 +29,5 @@ class UploadScreen(Screen):
         self, event: DirectoryTree.FileSelected
     ) -> None:
         """Called when the user clicks a file in the directory tree."""
-        # event.stop()
         self.query_one("#file_name").value = str(event.path)
         self.query_one("#file_name").focus()
