@@ -20,22 +20,21 @@ class DataHandler:
             return True
 
     def update_category(self, new_category, row):
-        self.old_category = row[4]
-        self.description = row[3]
-        self.posted_date = row[1]
+        """Update the category of a transaction based on user input."""
+        old_category = row[4]
+        description = row[3]
+        posted_date = row[1]
         amount = row[2]
         balance = row[5]
-        """Update the category of a transaction based on user input."""
         success = self.model.update_category(
             new_category,
-            self.old_category,
-            self.description,
-            self.posted_date,
+            old_category,
+            description,
+            posted_date,
             amount,
             balance,
         )
         if success:
-            print("successfully updated the category in the DataBase")
             return True
 
     def close_database_connection(self):
@@ -45,3 +44,17 @@ class DataHandler:
             return True
         else:
             print("Failed to close the database connection properly")
+
+    def update_processing_status(self, row):
+        category = row[4]
+        description = row[3]
+        posted_date = row[1]
+        amount = row[2]
+        balance = row[5]
+        success = self.model.update_status(
+            category, description, posted_date, amount, balance
+        )
+        if success:
+            return True
+        else:
+            print("failed to update - from DataHandler")

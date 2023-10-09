@@ -1,55 +1,20 @@
-from constants_cat import SELECT_OPTIONS
-from textual import on
+from textual import events, on
 from textual.app import ComposeResult
-from textual.containers import Container, Vertical
 from textual.message import Message
-from textual.screen import ModalScreen, Screen
-from textual.widgets import Button, Footer, Header, Label, Select
+from textual.screen import Screen
+from textual.widgets import Button, Footer, Header
 from textual_pandas.widgets import DataTable
 
-
-class CategorySelection(ModalScreen):
-    """Modal Screen for selecting transaction categories."""
-
-    def __init__(self, row_values: list):
-        super().__init__(row_values)
-        self.row_values = row_values
-        self.transaction_description = self.row_values[3]
-        self.current_category = self.row_values[4]
-
-    def compose(self) -> ComposeResult:
-        yield Vertical(
-            Label(
-                f"How would you categorize {self.transaction_description}?",
-                id="question",
-            ),
-            Select(
-                options=SELECT_OPTIONS,
-                id="category_list",
-                prompt="Select Category",
-            ),
-            Container(
-                Button("Accept", variant="success", id="accept"),
-                Button("Cancel", variant="primary", id="cancel"),
-                classes="cat_buttons",
-            ),
-            id="dialog",
-            classes="modal",
-        )
-
-    def on_mount(self) -> None:
-        self.sub_title = "Select Category"
-        self.query_one("#category_list").expanded = True
-
-    @on(Button.Pressed, "#accept")
-    def on_accept(self):
-        """Send category and row to DataHandler for updating the database."""
-        self.dismiss(result=self.query_one(Select).value)
+from views.cat_modal import CategorySelection
 
 
 class LabelTransactions(Screen):
     def __init__(self):
         super().__init__()
+
+    BINDINGS = {
+        ("a", "accept_transaction()", "Accept Transaction"),
+    }
 
     class TableMounted(Message):
         """Message to let app know that the datatable was mounted"""
@@ -67,6 +32,15 @@ class LabelTransactions(Screen):
             self.table = table
             super().__init__()
 
+    class ProcessingStatusChange(Message):
+        """Message to let app know that the processing status is changing to 'Yes'"""
+
+        def __init__(self, row_key, table: DataTable, value: str = "Yes"):
+            self.value = value
+            self.row_key = row_key
+            self.table = table
+            super().__init__()
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()
@@ -79,6 +53,33 @@ class LabelTransactions(Screen):
         self.table.cursor_type = "row"
         self.post_message(self.TableMounted(self.table))
         self.table.focus()
+
+    @on(DataTable.RowHighlighted)
+    def store_highlighted_row(self, event: DataTable.RowHighlighted):
+        """Store the row key of the highlighted row."""
+        self.current_highlighted_row = event.row_key
+
+    def change_status_to_processed(self):
+        """Change the status of the selected transaction to processed."""
+        self.table.update_cell(
+            row_key=self.current_highlighted_row,
+            column_key=self.app.transaction_columns[6],
+            value="Yes",
+        )
+
+    def action_accept_transaction(self):
+        """Accept the selected transaction. Update UI & send message to update DB"""
+        self.post_message(
+            self.ProcessingStatusChange(
+                row_key=self.current_highlighted_row, table=self.table
+            )
+        )
+        self.change_status_to_processed()
+
+    @on(Button.Pressed, "#home")
+    def go_to_main_menu(self, event: Button.Pressed):
+        """Return to the main menu."""
+        self.app.push_screen("home")
 
     @on(DataTable.RowSelected)
     def on_data_table_row_selected(self, event: DataTable.RowSelected):

@@ -28,7 +28,8 @@ class Controller(App):
     ####################################################################################
     ############### Event Handlers Below, Class Definitions above ######################
     ####################################################################################
-    
+    # TODO: Create a Modal Screen / Keyboard shortcut help menu
+
     def on_mount(self) -> None:
         self.title = "Textual Bank"
         self.sub_title = "Home Screen"
@@ -36,6 +37,15 @@ class Controller(App):
     def on_key(self, event: events.Key) -> None:
         if event.key == "h":
             self.push_screen("home")
+
+    @on(LabelTransactions.ProcessingStatusChange)
+    def update_processing_status_in_db(
+        self, event: LabelTransactions.ProcessingStatusChange
+    ):
+        """Inform DataHandler of changes needed in the DB for processing status."""
+        self.data_handler.update_processing_status(
+            row=event.table.get_row(event.row_key)
+        )
 
     @on(LabelTransactions.TableMounted)
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
@@ -53,7 +63,7 @@ class Controller(App):
         event.table.add_rows(unprocessed_data[0:])
 
     @on(Select.Changed)
-    def investigate_options(self, event: Select.Changed):
+    def select_new_category(self, event: Select.Changed):
         """When an option is selected, set category & set focus on the accept button."""
         self.new_category = event.value
         self.query_one("#accept").focus()
@@ -100,8 +110,6 @@ class Controller(App):
             column_key=self.transaction_columns[6],
             value="Yes",
         )
-        # TODO: Do I want to add a keybindind to remove rows from the table?
-        # event.table.remove_row(event.row_key)
 
 
 if __name__ == "__main__":
