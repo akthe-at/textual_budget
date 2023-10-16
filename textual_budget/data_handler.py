@@ -13,7 +13,7 @@ class DataHandler:
         """Query all unprocessed transactions from the database."""
         return self.model.get_unprocessed_transactions()
 
-    def upload_dataframe(self, event, filepath: str):
+    def upload_dataframe(self, filepath: str):
         """Upload a csv file to the database."""
         success = self.model.upload_dataframe(filepath)
         if success:
@@ -58,3 +58,5 @@ class DataHandler:
             return True
         else:
             print("failed to update - from DataHandler")
+
+

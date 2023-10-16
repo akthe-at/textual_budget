@@ -8,7 +8,7 @@ Screen {
 }
 
 Button {
-     width: 35;
+    width: 35;
 }
 
 #dialog {
@@ -29,14 +29,9 @@ margin: 2;
     align-horizontal: center;
 }
 
-CategorySelection {
-    
-    content-align: center middle;
-    align-horizontal: center;
-}
 
 CategorySelection {
-    
+    content-align: center middle;
     align-horizontal: center;
     align-vertical: middle;
     width: auto;
@@ -53,10 +48,12 @@ Grid {
     grid-size: 2;
     margin: 1;
     padding: 1;
-    width: 150
+    width: 1fr;
 }
 
-
+HomeScreen {
+    width: 1fr;
+}
 
 Menu {
     layout: grid;
@@ -65,10 +62,12 @@ Menu {
     align: center middle;
     background: $primary-background-darken-2;
     border: double snow;
+    width: auto;
 }
 
 Vertical{
     align: center middle;
+    width: 1fr;
 }
 
 Placeholder {
@@ -77,8 +76,9 @@ Placeholder {
 }
 
 .column {
-    width: 1fr;
+    width: auto;
 }
+
 
 #tree-view {
     scrollbar-gutter: stable;
@@ -90,7 +90,7 @@ Placeholder {
 }
 
 .mainmenu Button {
-    width: auto;
+    width: 1fr;
     align: center middle;
 }
 
@@ -111,3 +111,41 @@ Label {
     text-align: center;
 }
 
+BudgetCRUD Button{
+    margin: 1;
+    width: 1fr
+
+}
+
+BudgetCRUD DataTable{
+    width: 1fr;
+    background: $secondary-background-darken-1;
+    align: center middle;
+    height: 2fr;
+}
+
+BudgetCRUD {
+    background: $secondary-background;
+}
+
+BudgetCRUD horizontal{
+    height: 2fr;
+    width: 1fr
+}
+
+CreateBudgetItem {
+    background: $secondary-background;
+    content-align: center top;
+    height: 2fr;
+    width: 1fr;
+    color: snow;
+}
+
+CreateBudgetItem Vertical{
+    margin: 1;
+    align: center middle
+}
+
+CreateBudgetItem Input{
+    margin: 1;
+}

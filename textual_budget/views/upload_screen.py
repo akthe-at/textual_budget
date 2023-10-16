@@ -16,6 +16,7 @@ class UploadScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
+        yield Button(label="Go Back", variant="warning", id="home")
         yield Input("Select File to Upload", id="file_name")
         yield Button("Upload Transactions", id="upload_transactions")
         yield Footer()

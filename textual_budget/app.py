@@ -62,17 +62,17 @@ class Controller(App):
         )
         event.table.add_rows(unprocessed_data[0:])
 
-    @on(Select.Changed)
+    @on(Select.Changed, "#category_list")
     def select_new_category(self, event: Select.Changed):
         """When an option is selected, set category & set focus on the accept button."""
         self.new_category = event.value
         self.query_one("#accept").focus()
 
     @on(Button.Pressed, "#upload_transactions")
-    def on_upload_dataframe(self, event: Button.Pressed):
+    def on_upload_dataframe(self):
         """Send filepath to DataHandler for uploading to database."""
         filepath = Path(self.query_one("#file_name").value)
-        self.data_handler.upload_dataframe(event, filepath)
+        self.data_handler.upload_dataframe(filepath)
 
     @on(Button.Pressed, "#cancel")
     def cancel_buttons(self):
@@ -110,6 +110,11 @@ class Controller(App):
             column_key=self.transaction_columns[6],
             value="Yes",
         )
+
+    @on(Button.Pressed, "#home")
+    def go_to_main_menu(self, event: Button.Pressed):
+        """Return to the main menu."""
+        self.app.push_screen("home")
 
 
 if __name__ == "__main__":

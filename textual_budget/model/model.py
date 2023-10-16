@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 
 
-# TODO: Compile a base list of .str.replace() to start to auto"categorize" transactions
 def tweak_incoming_dataframe(df: pd.DataFrame):
     """Clean up incoming DataFrame"""
     return df.assign(
@@ -57,6 +56,11 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
             x.Category,
         ),
         Amount=lambda x: x.Amount.str.replace("$", "")
+        .str.replace("(", "-")
+        .str.replace(")", "")
+        .str.replace(",", "")
+        .astype("float64"),
+        Balance=lambda x: x.Balance.str.replace("$", "")
         .str.replace("(", "-")
         .str.replace(")", "")
         .str.replace(",", "")
@@ -165,3 +169,93 @@ ORDER BY PostedDate DESC
         )
         unprocessed_data = self.cursor.fetchall()
         return unprocessed_data
+
+
+####################
+####################
+# BUDGET GOAL CRUD #
+####################
+####################
+
+    # BudgetGoals Schema = id, Category, Month, Year, Goal, Active
+    # cursor.execute('CREATE TABLE budget_goals (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT NOT NULL, month TEXT NOT NULL, year INTEGER NOT NULL, goal DECIMAL(10,2) NOT NULL, active BOOLEAN NOT NULL);')
+
+    def retrieve_all_goals(self):
+        """Retrieve all goals from the database."""
+        self.cursor.execute(
+            """
+            SELECT
+                id,
+                category,
+                month,
+                year,
+                goal,
+                active
+            FROM budget_goals
+            """
+        )
+        goals = self.cursor.fetchall()
+        return goals
+    
+    def retrieve_active_goals(self):
+        """Retrieve all active goals from the database."""
+        self.cursor.execute(
+            """
+            SELECT
+                id,
+                category,
+                month,
+                year,
+                goal,
+                active
+            FROM budget_goals
+            WHERE active = TRUE
+            """
+        )
+        goals = self.cursor.fetchall()
+        return goals
+
+    def insert_new_goals(self, category: str, month: str, year: int, amount: int):
+        """Insert new goals into the database."""
+        self.cursor.execute(
+            """
+            INSERT INTO budget_goals 
+            (category, month, year, goal, active)
+            VALUES (?, ?, ?, ?, ?)""",
+            (category, month, year, amount, True),
+        )
+        self.con.commit()
+
+    def update_existing_goals(
+        self, category: str, month: str, year: int, amount: int, id: int
+    ) -> None:
+        """Update existing goals"""
+        self.cursor.execute(
+            """
+            UPDATE budget_goals
+            SET category = ?,
+            month = ?,
+            year = ?,
+            amount = ?,
+            WHERE category = ?
+            and id = ?
+            """,
+            (category, month, year, amount, id),
+        )
+
+    # !!! UPDATE OLD GOALS TRIGGER - this isn't actually suppposed to be a function, just run once
+        """
+        CREATE TRIGGER deactivate_old_budget_goals
+        AFTER INSERT ON `budget_goals` FOR EACH ROW
+        BEGIN
+        UPDATE budget_goals SET active = FALSE
+        WHERE category = NEW.category
+        AND NOT (id = NEW.id);
+        END
+        """
+
+##########################
+##########################
+## CATEGORY AGGREGATION ##
+##########################
+##########################

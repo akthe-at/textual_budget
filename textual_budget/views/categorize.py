@@ -1,4 +1,4 @@
-from textual import events, on
+from textual import on
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.screen import Screen
@@ -45,16 +45,16 @@ class LabelTransactions(Screen):
         yield Header()
         yield Footer()
         yield Button(label="Go Back", variant="warning", id="home")
-        yield DataTable(id="data_table")
+        yield DataTable(id="transaction_data_table")
 
     def on_mount(self) -> None:
         self.sub_title = "Monitor Income/Expenditure Transactions"
-        self.table = self.query_one(DataTable)
+        self.table = self.query_one("#transaction_data_table")
         self.table.cursor_type = "row"
         self.post_message(self.TableMounted(self.table))
         self.table.focus()
 
-    @on(DataTable.RowHighlighted)
+    @on(DataTable.RowHighlighted, "#transaction_data_table")
     def store_highlighted_row(self, event: DataTable.RowHighlighted):
         """Store the row key of the highlighted row."""
         self.current_highlighted_row = event.row_key
@@ -76,12 +76,7 @@ class LabelTransactions(Screen):
         )
         self.change_status_to_processed()
 
-    @on(Button.Pressed, "#home")
-    def go_to_main_menu(self, event: Button.Pressed):
-        """Return to the main menu."""
-        self.app.push_screen("home")
-
-    @on(DataTable.RowSelected)
+    @on(DataTable.RowSelected, "#transaction_data_table")
     def on_data_table_row_selected(self, event: DataTable.RowSelected):
         """Prompt the user to select a category for the selected cell."""
         self.current_row_key = event.row_key
