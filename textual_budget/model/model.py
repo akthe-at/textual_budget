@@ -65,6 +65,7 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
         .str.replace(")", "")
         .str.replace(",", "")
         .astype("float64"),
+        Flagged="",
     ).rename(
         columns={
             "Posted Date": "PostedDate",
@@ -115,6 +116,26 @@ class Model:
             print("FAILED TO UPDATE CATEGORY")
         return True
 
+    def flag_transaction(self, category, description, posted_date, amount, balance):
+        """Update the processing status of a transaction."""
+        self.cursor.execute(
+            """UPDATE MyAccounts
+            SET Flagged = 'Flagged'
+            WHERE Category = ?
+            AND Description = ?
+            AND PostedDate = ?
+            AND Amount = ?
+            AND Balance = ?
+            """,
+            (category, description, posted_date, amount, balance),
+        )
+        try:
+            self.con.commit()
+        except Exception:
+            self.con.rollback()
+            print("FAILED TO UPDATE FLAG STATUS")
+        return True
+
     def update_category(
         self,
         category: str,
@@ -161,7 +182,8 @@ SELECT
     Description, 
     Category, 
     Balance, 
-    Processed
+    Processed,
+    Flagged
 FROM MyAccounts 
 WHERE Processed = 'No'
 ORDER BY PostedDate DESC
@@ -170,12 +192,11 @@ ORDER BY PostedDate DESC
         unprocessed_data = self.cursor.fetchall()
         return unprocessed_data
 
-
-####################
-####################
-# BUDGET GOAL CRUD #
-####################
-####################
+    ####################
+    ####################
+    # BUDGET GOAL CRUD #
+    ####################
+    ####################
 
     # BudgetGoals Schema = id, Category, Month, Year, Goal, Active
     # cursor.execute('CREATE TABLE budget_goals (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT NOT NULL, month TEXT NOT NULL, year INTEGER NOT NULL, goal DECIMAL(10,2) NOT NULL, active BOOLEAN NOT NULL);')
@@ -196,7 +217,7 @@ ORDER BY PostedDate DESC
         )
         goals = self.cursor.fetchall()
         return goals
-    
+
     def retrieve_active_goals(self):
         """Retrieve all active goals from the database."""
         self.cursor.execute(
@@ -215,35 +236,51 @@ ORDER BY PostedDate DESC
         goals = self.cursor.fetchall()
         return goals
 
-    def insert_new_goals(self, category: str, month: str, year: int, amount: int):
+    def insert_new_goals(
+        self, category: str, month: str, year: int, amount: int, active: bool
+    ):
         """Insert new goals into the database."""
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS budget_goals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT,
+            month TEXT,
+            year INTEGER,
+            goal INTEGER,
+            active INTEGER
+            )
+            """
+        )
         self.cursor.execute(
             """
             INSERT INTO budget_goals 
             (category, month, year, goal, active)
             VALUES (?, ?, ?, ?, ?)""",
-            (category, month, year, amount, True),
+            (category, month, year, amount, active),
         )
         self.con.commit()
 
     def update_existing_goals(
-        self, category: str, month: str, year: int, amount: int, id: int
+        self, category: str, month: str, year: int, goal: int, active: bool, id: int
     ) -> None:
         """Update existing goals"""
+        print(category, month, year, goal, active, id)
         self.cursor.execute(
             """
             UPDATE budget_goals
             SET category = ?,
             month = ?,
             year = ?,
-            amount = ?,
-            WHERE category = ?
-            and id = ?
+            goal = ?,
+            active = ?
+            WHERE id = ?
             """,
-            (category, month, year, amount, id),
+            (category, month, year, goal, active, id),
         )
+        self.con.commit()
 
-    # !!! UPDATE OLD GOALS TRIGGER - this isn't actually suppposed to be a function, just run once
+        # !!! UPDATE OLD GOALS TRIGGER - this isn't actually suppposed to be a function, just run once
         """
         CREATE TRIGGER deactivate_old_budget_goals
         AFTER INSERT ON `budget_goals` FOR EACH ROW
@@ -253,6 +290,7 @@ ORDER BY PostedDate DESC
         AND NOT (id = NEW.id);
         END
         """
+
 
 ##########################
 ##########################
