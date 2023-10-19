@@ -3,18 +3,40 @@ from datetime import datetime
 from constants_cat import SELECT_OPTIONS
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Center, Horizontal, Vertical
 from textual.message import Message
 from textual.screen import Screen
+from textual.validation import Function, Number
 from textual.widgets import (
     Button,
     DataTable,
     Footer,
     Header,
     Input,
+    Markdown,
     RadioButton,
     Select,
 )
+
+
+def is_a_month(x: str) -> bool:
+    """Validate that the input is a month."""
+    if x.lower() in [
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "november",
+        "december",
+    ]:
+        return True
+    else:
+        return False
 
 
 class UpdateBudgetItem(Screen):
@@ -28,10 +50,26 @@ class UpdateBudgetItem(Screen):
                 options=SELECT_OPTIONS,
                 prompt="Select a Category",
                 id="update_item_category",
+                allow_blank=False,
             )
-            yield Input(id="update_item_month")
-            yield Input(id="update_item_year")
-            yield Input(id="update_item_goal")
+            yield Input(
+                id="update_item_month",
+                validators=[
+                    Function(
+                        function=is_a_month,
+                        failure_description="Please enter a month",
+                    )
+                ],
+                highlighter=None,
+            )
+            yield Input(
+                id="update_item_year",
+                validators=[Number(failure_description="Please enter a number")],
+            )
+            yield Input(
+                id="update_item_goal",
+                validators=[Number(failure_description="Please enter a number")],
+            )
             yield RadioButton(
                 value=False, label="Active Goal?", id="update_item_status"
             )
