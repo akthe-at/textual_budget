@@ -37,6 +37,7 @@ class Controller(App):
     ####################################################################################
     ############### Event Handlers Below, Class Definitions above ######################
     ####################################################################################
+
     @on(Select.Changed, "#category_list")
     def select_new_category(self, event: Select.Changed):
         """When an option is selected, set category & set focus on the accept button."""
@@ -142,6 +143,9 @@ class Controller(App):
             year=event.item_year,
             active=event.active_status,
         )
+        table = self.query_one("#budget_data_table")
+        table.clear()
+        table.add_rows(self.data_handler.query_active_budget_items_from_db()[0:])
 
     #############################################
     ############# Button Events #################
