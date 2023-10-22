@@ -1,13 +1,15 @@
 from pathlib import Path
 
-from constants_app import BINDINGS, SCREENS
-from data_handler import DataHandler
-from model.model import Model
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
 from textual.widgets import Button, Select
+
+from constants_app import BINDINGS, SCREENS
+from data_handler import DataHandler
+from model.model import Model
 from views.budget import BudgetCRUD
+from views.budget_progress import BudgetProgress
 from views.categorize import LabelTransactions
 from views.main_screen import HomeScreen
 
@@ -50,13 +52,24 @@ class Controller(App):
     ):
         """Inform DataHandler of changes needed in the DB for processing status."""
         self.data_handler.update_processing_status(
-            row=event.table.get_row(event.row_key)
+            row=event.table.get_row(event.row_key),
+            value=event.value,
         )
 
     @on(LabelTransactions.FlagTransaction)
     def flag_transaction(self, event: LabelTransactions.FlagTransaction):
         """Inform DataHandler of changes needed in the DB for flagged status."""
         self.data_handler.flag_transaction(row=event.table.get_row(event.row_key))
+
+    @on(BudgetProgress.ProgressTableMounted)
+    def get_aggregate_table_data(self, event: BudgetProgress.ProgressTableMounted):
+        """Query the DB for all unprocessed transactions and add them to the table."""
+        progress_data = self.data_handler.query_budget_progress_from_db()
+        if progress_data:
+            event.table.add_columns(
+                "Goal", "Actual", "Difference", "Category", "Month/Year"
+            )
+            event.table.add_rows(progress_data[0:])
 
     @on(LabelTransactions.TableMounted)
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
@@ -92,29 +105,31 @@ class Controller(App):
             value="Yes",
         )
 
+    @on(BudgetProgress.ProgressTableMounted)
+    def get_budget_progress_data(self, event: BudgetProgress.ProgressTableMounted):
+        """Query the DB for all budget items and add them to the table."""
+
     @on(BudgetCRUD.BudgetTableMounted)
     def get_all_budget_items(self, event: BudgetCRUD.BudgetTableMounted):
         """Query the DB for all budget items and add them to the table."""
         budget_items = self.data_handler.query_active_budget_items_from_db()
-        self.budget_columns = event.table.add_columns(
-            "ID",
-            "Category",
-            "Month",
-            "Year",
-            "Amount",
-            "Active",
-        )
-        event.table.add_rows(budget_items[0:])
+        if budget_items:
+            self.budget_columns = event.table.add_columns(
+                "ID",
+                "Category",
+                "Amount",
+                "Active",
+                "Date Added",
+                "Last Modified",
+            )
+            event.table.add_rows(budget_items[0:])
 
     @on(BudgetCRUD.StartBudgetItemUpdate)
     def items_to_update(self, event: BudgetCRUD.StartBudgetItemUpdate):
         """Send the row data to the BudgetCRUD screen to be updated."""
         self.query_one("#update_item_id").value = str(event.row_data[0])
         self.query_one("#update_item_category").value = str(event.row_data[1])
-        self.query_one("#update_item_month").value = str(event.row_data[2])
-        self.query_one("#update_item_year").value = str(event.row_data[3])
-        self.query_one("#update_item_goal").value = str(event.row_data[4])
-        # self.query_one("#update_item_status").value = str(event.row_data[5])
+        self.query_one("#update_item_goal").value = str(event.row_data[2])
 
     @on(BudgetCRUD.SaveBudgetItemUpdate)
     def budget_items_to_update(self, event: BudgetCRUD.SaveBudgetItemUpdate):
@@ -139,13 +154,17 @@ class Controller(App):
         self.data_handler.save_new_budget_item(
             category=event.item_category,
             amount=event.item_amount,
-            month=event.item_month,
-            year=event.item_year,
             active=event.active_status,
         )
         table = self.query_one("#budget_data_table")
         table.clear()
         table.add_rows(self.data_handler.query_active_budget_items_from_db()[0:])
+
+    @on(BudgetCRUD.DeleteBudgetItem)
+    def delete_budget_item(self, event: BudgetCRUD.DeleteBudgetItem):
+        """Delete a budget item from the database."""
+        self.data_handler.delete_item_from_db(id=event.id)
+        event.table.remove_row(event.row_key)
 
     #############################################
     ############# Button Events #################

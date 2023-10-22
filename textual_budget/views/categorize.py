@@ -38,7 +38,7 @@ class LabelTransactions(Screen):
     class ProcessingStatusChange(Message):
         """Message to let app know that the processing status is changing to 'Yes'"""
 
-        def __init__(self, row_key, table: DataTable, value: str = "Yes"):
+        def __init__(self, row_key, table: DataTable, value: str):
             self.value = value
             self.row_key = row_key
             self.table = table
@@ -86,7 +86,9 @@ class LabelTransactions(Screen):
         """Accept the selected transaction. Update UI & send message to update DB"""
         self.post_message(
             self.ProcessingStatusChange(
-                row_key=self.current_highlighted_row, table=self.table
+                row_key=self.current_highlighted_row,
+                table=self.table,
+                value="Yes",
             )
         )
         self.change_status_to_processed()

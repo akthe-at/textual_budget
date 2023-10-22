@@ -1,42 +1,19 @@
-from datetime import datetime
-
 from constants_cat import SELECT_OPTIONS
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Center, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.message import Message
 from textual.screen import Screen
-from textual.validation import Function, Number
+from textual.validation import Number
 from textual.widgets import (
     Button,
     DataTable,
     Footer,
     Header,
     Input,
-    Markdown,
     RadioButton,
     Select,
 )
-
-
-def is_a_month(x: str) -> bool:
-    """Validate that the input is a month."""
-    if x.lower() in [
-        "january",
-        "february",
-        "march",
-        "april",
-        "may",
-        "june",
-        "july",
-        "august",
-        "september",
-        "november",
-        "december",
-    ]:
-        return True
-    else:
-        return False
 
 
 class UpdateBudgetItem(Screen):
@@ -51,20 +28,6 @@ class UpdateBudgetItem(Screen):
                 prompt="Select a Category",
                 id="update_item_category",
                 allow_blank=False,
-            )
-            yield Input(
-                id="update_item_month",
-                validators=[
-                    Function(
-                        function=is_a_month,
-                        failure_description="Please enter a month",
-                    )
-                ],
-                highlighter=None,
-            )
-            yield Input(
-                id="update_item_year",
-                validators=[Number(failure_description="Please enter a number")],
             )
             yield Input(
                 id="update_item_goal",
@@ -86,8 +49,6 @@ class UpdateBudgetItem(Screen):
             result=[
                 self.query_one("#update_item_id").value,
                 self.query_one("#update_item_category").value,
-                self.query_one("#update_item_month").value,
-                self.query_one("#update_item_year").value,
                 self.query_one("#update_item_goal").value,
                 self.query_one("#update_item_status").value,
             ]
@@ -105,12 +66,6 @@ class CreateBudgetItem(Screen):
                 options=SELECT_OPTIONS, id="budget_item_category", prompt="Category"
             )
             yield Input(id="budget_item_amount", placeholder="Amount")
-            yield Input(
-                id="budget_item_month", placeholder=datetime.now().strftime("%B")
-            )
-            yield Input(
-                id="budget_item_year", placeholder=datetime.now().strftime("%Y")
-            )
             yield RadioButton(
                 value=True,
                 label="Active Goal?",
@@ -129,8 +84,6 @@ class CreateBudgetItem(Screen):
             result=[
                 self.query_one("#budget_item_category").value,
                 self.query_one("#budget_item_amount").value,
-                self.query_one("#budget_item_month").value,
-                self.query_one("#budget_item_year").value,
                 self.query_one("#active_status_switch").value,
             ]
         )
@@ -147,6 +100,7 @@ class BudgetCRUD(Screen):
             yield Button("Retrieve All Budget Goals", id="retrieve_all_budget_items")
             yield Button("Create New Budget Goal", id="create_budget_item")
             yield Button("Update Existing Budget Goal", id="update_budget_item")
+            yield Button("Delete Existing Budget Goal", id="delete_budget_item")
         yield DataTable(id="budget_data_table")
         yield Footer()
 
@@ -155,6 +109,16 @@ class BudgetCRUD(Screen):
 
         def __init__(self, table: DataTable):
             self.table = table
+            super().__init__()
+
+    class DeleteBudgetItem(Message):
+        """Message to let app know that a goal needs to be deleted"""
+
+        def __init__(self, table: DataTable, row_data: list, current_row_selected):
+            self.id = row_data[0]
+            self.table = table
+            self.row_data = row_data
+            self.row_key = current_row_selected
             super().__init__()
 
     class FilterBudgetTable(Message):
@@ -179,6 +143,17 @@ class BudgetCRUD(Screen):
         """Send message to app to save updated budget items"""
         self.post_message(self.SaveBudgetItemUpdate(result=result, table=self.table))
 
+    @on(Button.Pressed, "#delete_budget_item")
+    def delete_budget_item(self, event: Button.Pressed):
+        """Delete the selected budget item"""
+        self.post_message(
+            self.DeleteBudgetItem(
+                row_data=self.row_data,
+                table=self.table,
+                current_row_selected=self.current_row_selected,
+            )
+        )
+
     @on(Button.Pressed, "#retrieve_active_budget_items")
     def retrieve_active_budget_items(self, event: Button.Pressed):
         """Retrieve all active budget items"""
@@ -195,9 +170,7 @@ class BudgetCRUD(Screen):
         def __init__(self, row_data: list):
             self.item_category = row_data[0]
             self.item_amount = row_data[1]
-            self.item_month = row_data[2]
-            self.item_year = row_data[3]
-            self.active_status = row_data[4]
+            self.active_status = row_data[2]
 
             super().__init__()
 
