@@ -78,18 +78,48 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
 class Model:
     """Data model for the application."""
 
-    db_path: str = (
-        "C:/Users/ARK010/Documents/textual_budget/textual_budget/model/dev.db"
-    )
+    db_path: (
+        str
+    ) = "C:/Users/ARK010/Documents/textual_budget/textual_budget/model/dev.db"
     con: Connection = sqlite3.connect(db_path)
     cursor: Cursor = con.cursor()
 
     def upload_dataframe(self, filepath: str):
         """Upload a csv file to the database."""
         df = pd.read_csv(filepath, parse_dates=["Posted Date"])
-        df = tweak_incoming_dataframe(df)
-        df.to_sql("MyAccounts", con=self.con, index=False, if_exists="replace")
+        df = (
+            df.rename(columns={"Posted Date": "PostedDate"})
+            .groupby(["Description", "PostedDate"])
+            .agg("first")
+        )
+        df_filtered = self.compare_dataframes(df_new=df)
+        df_final = tweak_incoming_dataframe(df_filtered)
+        df_final.to_sql("MyAccounts", con=self.con, index=False, if_exists="append")
         return True
+
+    def compare_dataframes(self, df_new: pd.DataFrame):
+        """Compares the two dataframes to avoid adding duplicate data"""
+        df_old = pd.read_sql("select * from MyAccounts", self.con)
+        df_old = (
+            df_old.assign(PostedDate=lambda x: pd.to_datetime(x.PostedDate))
+            .groupby(["Description", "PostedDate"])
+            .agg("first")
+        )
+        df_filtered = (df_new.loc[(~df_new.index.isin(df_old.index))]).reset_index()
+        return df_filtered[
+            [
+                "AccountNumber",
+                "AccountType",
+                "PostedDate",
+                "Amount",
+                "Description",
+                "Check Number",
+                "Category",
+                "Balance",
+                "Labels",
+                "Note",
+            ]
+        ]
 
     def close_database_connection(self):
         """Close the database connection."""
@@ -338,7 +368,7 @@ INNER JOIN budget_goals bg
     on bg.category = acct.Category 
 WHERE bg.active = 1 
     and acct.Processed = 'Yes' 
-    and strftime('%Y-%m', date('now', '-1 month')) = strftime('%Y-%m', acct.PostedDate)
+    and strftime('%Y-%m', date('now')) = strftime('%Y-%m', acct.PostedDate)
 GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
 ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
 """
