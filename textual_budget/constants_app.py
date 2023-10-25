@@ -1,4 +1,5 @@
-from views.budget import BudgetCRUD, BudgetProgress, CreateBudgetItem
+from views.budget import BudgetCRUD, CreateBudgetItem
+from views.budget_progress import BudgetProgress
 from views.categorize import CategorySelection, LabelTransactions
 from views.main_screen import HomeScreen
 from views.stats import SpendingStats
