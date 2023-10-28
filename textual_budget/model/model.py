@@ -97,7 +97,7 @@ class Model:
         df_final.to_sql("MyAccounts", con=self.con, index=False, if_exists="append")
         return True
 
-    def compare_dataframes(self, df_new: pd.DataFrame):
+    def compare_dataframes(self, df_new: pd.DataFrame) -> pd.DataFrame:
         """Compares the two dataframes to avoid adding duplicate data"""
         df_old = pd.read_sql("select * from MyAccounts", self.con)
         df_old = (
@@ -353,6 +353,27 @@ ORDER BY PostedDate DESC
     ## CATEGORY AGGREGATION ##
     ##########################
     ##########################
+    def retrieve_month_fwd_progress(self, number_of_months: int):
+        self.cursor.execute(
+            """
+SELECT
+bg.goal as "Goal", 
+SUM(acct.Amount) as "Actual",
+SUM(acct.Amount) - bg.goal as "Difference",
+acct.Category, 
+strftime('%Y-%m', acct.PostedDate) 
+FROM MyAccounts acct 
+INNER JOIN budget_goals bg 
+    on bg.category = acct.Category 
+WHERE bg.active = 1 
+    and acct.Processed = 'Yes' 
+    and strftime('%Y-%m', date('now') - ? 'month') = strftime('%Y-%m', acct.PostedDate)
+GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
+        """,
+            (number_of_months),
+        )
+        self.cursor.fetchall()
 
     def retrieve_budget_progress(self):
         self.cursor.execute(

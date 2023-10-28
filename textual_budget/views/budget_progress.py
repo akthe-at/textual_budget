@@ -1,12 +1,13 @@
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.screen import Screen
-from textual.widgets import DataTable, Footer, Header
+from textual.widgets import Button, DataTable, Footer, Header
 
 
 class BudgetProgress(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
+        yield Button(id="month_forward_button")
         yield DataTable(id="budget_progress_table")
         yield Footer()
 
@@ -16,6 +17,11 @@ class BudgetProgress(Screen):
         def __init__(self, table: DataTable):
             self.table = table
             super().__init__()
+
+    class CycleForward(Message):
+        """Message to cycle forward the month/table"""
+
+        ...
 
     def on_mount(self) -> None:
         self.sub_title = "Monitor Budget"

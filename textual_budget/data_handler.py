@@ -100,12 +100,9 @@ class DataHandler:
     def flag_transaction(self, row):
         category = row[4]
         description = row[3]
-        posted_date = row[1]
         amount = row[2]
         balance = row[5]
-        success = self.model.flag_transaction(
-            category, description, posted_date, amount, balance
-        )
+        success = self.model.flag_transaction(category, description, amount, balance)
         if success:
             return True
         else:
@@ -118,3 +115,14 @@ class DataHandler:
             return True
         else:
             print("Failed to Save new Budget Item to DB- From DataHandler")
+
+    def cycle_month_forward(self, number_of_months: int) -> bool:
+        """cycle the progress table x months forward"""
+        success = self.model.retrieve_month_fwd_progress(
+            number_of_months=number_of_months
+        )
+        if success:
+            return True
+        else:
+            print("Sorry you can go that way.")
+            return False
