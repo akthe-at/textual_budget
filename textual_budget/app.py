@@ -13,6 +13,8 @@ from views.budget_progress import BudgetProgress
 from views.categorize import LabelTransactions
 from views.main_screen import HomeScreen
 
+# create a function that adds two numbers
+
 
 class Controller(App):
     def __init__(self, model: Model, data_handler: DataHandler):
@@ -165,6 +167,14 @@ class Controller(App):
         """Delete a budget item from the database."""
         self.data_handler.delete_item_from_db(id=event.id)
         event.table.remove_row(event.row_key)
+
+    @on(BudgetProgress.CycleBackward)
+    def handle_backward_cycle(self, event: BudgetProgress.CycleBackward):
+        """Tell DataHandler/DB to move data by x months backwards in time"""
+        event.table.clear()
+        event.table.add_rows(
+            self.data_handler.cycle_month_backward(number_of_months=event.number)
+        )
 
     #############################################
     ############# Button Events #################
