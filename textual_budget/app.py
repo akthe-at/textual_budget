@@ -173,7 +173,15 @@ class Controller(App):
         """Tell DataHandler/DB to move data by x months backwards in time"""
         event.table.clear()
         event.table.add_rows(
-            self.data_handler.cycle_month_backward(number_of_months=event.number)
+            self.data_handler.cycle_months(number_of_months=event.number_of_months)
+        )
+
+    @on(BudgetProgress.CycleForward)
+    def handle_forward_cycle(self, event: BudgetProgress.CycleForward):
+        """Tell DataHandler/DB to move data by x months forward in time"""
+        event.table.clear()
+        event.table.add_rows(
+            self.data_handler.cycle_months(number_of_months=event.number_of_months)
         )
 
     #############################################

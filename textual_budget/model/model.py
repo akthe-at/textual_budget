@@ -1,6 +1,7 @@
 import sqlite3
 from dataclasses import dataclass
 from sqlite3 import Connection, Cursor
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -353,7 +354,10 @@ ORDER BY PostedDate DESC
     ## CATEGORY AGGREGATION ##
     ##########################
     ##########################
-    def retrieve_month_fwd_progress(self, number_of_months: int):
+
+    def retrieve_month_bwd_progress(
+        self, number_of_months: int
+    ) -> list[Union[int, int, int, str, str]]:
         self.cursor.execute(
             """
 SELECT
@@ -367,13 +371,39 @@ INNER JOIN budget_goals bg
     on bg.category = acct.Category 
 WHERE bg.active = 1 
     and acct.Processed = 'Yes' 
-    and strftime('%Y-%m', date('now') - ? 'month') = strftime('%Y-%m', acct.PostedDate)
+    and strftime('%Y-%m', date('now', '-' || ? || ' month')) = strftime('%Y-%m', acct.PostedDate)
+GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+order by strftime('%y-%m', acct.posteddate) desc, acct.category
+        """,
+            (str(number_of_months)),
+        )
+        items = self.cursor.fetchall()
+        return items
+
+    def retrieve_month_fwd_progress(
+        self, number_of_months: int
+    ) -> list[Union[int, int, int, str, str]]:
+        self.cursor.execute(
+            """
+select
+bg.goal as "goal", 
+sum(acct.amount) as "actual",
+sum(acct.amount) - bg.goal as "difference",
+acct.Category, 
+strftime('%Y-%m', acct.PostedDate) 
+FROM MyAccounts acct 
+INNER JOIN budget_goals bg 
+    on bg.category = acct.Category 
+WHERE bg.active = 1 
+    and acct.Processed = 'Yes' 
+    and strftime('%Y-%m', date('now', + ? || 'month')) = strftime('%Y-%m', acct.PostedDate)
 GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
 ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
         """,
-            (number_of_months),
+            (str(number_of_months)),
         )
-        self.cursor.fetchall()
+        items = self.cursor.fetchall()
+        return items
 
     def retrieve_budget_progress(self):
         self.cursor.execute(

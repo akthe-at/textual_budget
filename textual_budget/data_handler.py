@@ -1,6 +1,6 @@
+from typing import Union
 from dataclasses import dataclass
 from datetime import datetime
-
 from model.model import Model
 
 
@@ -116,13 +116,14 @@ class DataHandler:
         else:
             print("Failed to Save new Budget Item to DB- From DataHandler")
 
-    def cycle_month_forward(self, number_of_months: int) -> bool:
-        """cycle the progress table x months forward"""
-        success = self.model.retrieve_month_fwd_progress(
-            number_of_months=number_of_months
-        )
-        if success:
-            return True
-        else:
-            print("Sorry you can go that way.")
-            return False
+    def cycle_months(
+        self, number_of_months: int
+    ) -> list[Union[int, int, int, str, str]]:
+        """Cycle the progress table x months backward"""
+        if number_of_months < 0:
+            return self.model.retrieve_month_bwd_progress(
+                number_of_months=abs(number_of_months)
+            )
+        elif number_of_months == 0:
+            return self.model.retrieve_budget_progress()
+        return self.model.retrieve_month_fwd_progress(number_of_months=number_of_months)
