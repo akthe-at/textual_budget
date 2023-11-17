@@ -5,6 +5,7 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
+from pandas.errors import DatabaseError
 
 
 def tweak_incoming_dataframe(df: pd.DataFrame):
@@ -13,6 +14,7 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
         Processed="No",
         Category=lambda x: np.select(
             [
+                (x.Description.str.contains("dividend paid", case=False)),
                 (x.Description.str.contains("netflix.com", case=False)),
                 (x.Description.str.contains("schnucks", case=False)),
                 (x.Description.str.contains("animal hospitals", case=False)),
@@ -36,6 +38,7 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
                 (x.Category.str.contains("Auto Insurance", case=False)),
             ],
             [
+                "Money towards savings",
                 "Netflix",
                 "Groceries/House Supplies",
                 "Dog",
@@ -85,11 +88,12 @@ class Model:
     con: Connection = sqlite3.connect(db_path)
     cursor: Cursor = con.cursor()
 
-    def upload_dataframe(self, filepath: str):
+    def upload_dataframe(self, filepath: str) -> bool:
         """Upload a csv file to the database."""
         df = pd.read_csv(filepath, parse_dates=["Posted Date"])
         df = (
-            df.rename(columns={"Posted Date": "PostedDate"})
+            df.loc[df["Posted Date"] >= "2023-09-01"]
+            .rename(columns={"Posted Date": "PostedDate"})
             .groupby(["Description", "PostedDate"])
             .agg("first")
         )
@@ -100,7 +104,10 @@ class Model:
 
     def compare_dataframes(self, df_new: pd.DataFrame) -> pd.DataFrame:
         """Compares the two dataframes to avoid adding duplicate data"""
-        df_old = pd.read_sql("select * from MyAccounts", self.con)
+        try:
+            df_old = pd.read_sql("select * from MyAccounts", self.con)
+        except DatabaseError:
+            return df_new.reset_index()
         df_old = (
             df_old.assign(PostedDate=lambda x: pd.to_datetime(x.PostedDate))
             .groupby(["Description", "PostedDate"])
@@ -134,7 +141,8 @@ class Model:
         )
         try:
             self.cursor.execute(
-                """UPDATE MyAccounts
+                """
+                UPDATE MyAccounts
                 SET Processed = ?
                 WHERE Category = ?
                 AND Description = ?
@@ -447,3 +455,4 @@ ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
         )
         budget_progress = self.cursor.fetchall()
         return budget_progress
+

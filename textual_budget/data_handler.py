@@ -1,7 +1,8 @@
-from typing import Union
+from typing import Any, Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from model.model import Model
+from pathlib import Path
 
 
 @dataclass
@@ -34,7 +35,7 @@ class DataHandler:
         else:
             print("Failed to delete category from datahandler)")
 
-    def upload_dataframe(self, filepath: str):
+    def upload_dataframe(self, filepath: str | Path):
         """Upload a csv file to the database."""
         success = self.model.upload_dataframe(filepath)
         if success:
@@ -116,9 +117,7 @@ class DataHandler:
         else:
             print("Failed to Save new Budget Item to DB- From DataHandler")
 
-    def cycle_months(
-        self, number_of_months: int
-    ) -> list[Union[int, int, int, str, str]]:
+    def cycle_months(self, number_of_months: int) -> Iterable[Iterable[Any]]:
         """Cycle the progress table x months backward"""
         if number_of_months < 0:
             return self.model.retrieve_month_bwd_progress(
@@ -127,3 +126,4 @@ class DataHandler:
         elif number_of_months == 0:
             return self.model.retrieve_budget_progress()
         return self.model.retrieve_month_fwd_progress(number_of_months=number_of_months)
+

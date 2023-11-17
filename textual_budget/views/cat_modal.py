@@ -9,7 +9,7 @@ from textual.widgets import Button, Label, Select
 class CategorySelection(ModalScreen):
     """Modal Screen for selecting transaction categories."""
 
-    def __init__(self, row_values: list):
+    def __init__(self, row_values: str):
         super().__init__(row_values)
         self.row_values = row_values
         self.transaction_description = self.row_values[3]
@@ -27,8 +27,8 @@ class CategorySelection(ModalScreen):
                 prompt="Select Category",
             ),
             Container(
-                Button("Accept", variant="success", id="accept"),
-                Button("Cancel", variant="primary", id="cancel"),
+                Button("Accept", id="accept"),
+                Button("Cancel", id="cancel"),
                 classes="cat_buttons",
             ),
             id="dialog",
@@ -37,7 +37,7 @@ class CategorySelection(ModalScreen):
 
     def on_mount(self) -> None:
         self.sub_title = "Select Category"
-        self.query_one("#category_list").expanded = True
+        self.query_one("#category_list", expect_type=Select).expanded = True
 
     @on(Button.Pressed, "#accept")
     def on_accept(self):

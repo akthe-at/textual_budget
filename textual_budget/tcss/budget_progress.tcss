@@ -1,0 +1,39 @@
+BudgetProgress {
+    layout: grid;
+    grid-size: 2;
+  }
+
+ #budget_progress_buttons {
+    align: center middle;
+    width: 60%;
+  }
+
+BudgetProgress Button {
+    margin: 1;
+    background: $background-lighten-3;
+    width: 75%;
+  }
+
+#budget_progress_table_container {
+    width: 100%;
+    align: center middle;
+    padding: 1;
+  }
+
+#budget_progress_table .datatable--header {
+background: $panel-lighten-3;
+}
+
+#budget_progress_table .datatable--cursor {
+background: $surface-lighten-3;
+}
+
+  BudgetProgress Header {
+      dock: top;
+      background: $surface-lighten-1;
+    }
+
+  BudgetProgress Footer {
+      dock: bottom;
+    }
+

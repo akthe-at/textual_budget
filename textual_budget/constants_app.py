@@ -16,6 +16,3 @@ SCREENS = {
     "new_budget_goal": CreateBudgetItem,
 }
 
-BINDINGS = {
-    ("h", "action_push_screen('home')", "Home Page"),
-}

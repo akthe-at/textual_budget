@@ -1,19 +1,16 @@
 from pathlib import Path
 
+from constants_app import SCREENS
+from data_handler import DataHandler
+from model.model import Model
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
-from textual.widgets import Button, Select
-
-from constants_app import BINDINGS, SCREENS
-from data_handler import DataHandler
-from model.model import Model
+from textual.widgets import Button, DataTable, Input, Select
 from views.budget import BudgetCRUD
 from views.budget_progress import BudgetProgress
 from views.categorize import LabelTransactions
 from views.main_screen import HomeScreen
-
-# create a function that adds two numbers
 
 
 class Controller(App):
@@ -22,9 +19,17 @@ class Controller(App):
         self.model = model
         self.data_handler = data_handler
 
-    CSS_PATH = "tcss/buttons.tcss"
+    CSS_PATH = [
+        "tcss/budget_crud.tcss",
+        "tcss/main_menu.tcss",
+        "tcss/transactions.tcss",
+        "tcss/uploads.tcss",
+        "tcss/budget_progress.tcss",
+        "tcss/budget_crud_modal.tcss",
+    ]
+
     SCREENS = SCREENS
-    BINDINGS = BINDINGS
+    BINDINGS = [("h", "action_push_screen('home')", "Home Page")]
     SHOW_TREE = var(True)
 
     def compose(self) -> ComposeResult:
@@ -110,6 +115,12 @@ class Controller(App):
     @on(BudgetProgress.ProgressTableMounted)
     def get_budget_progress_data(self, event: BudgetProgress.ProgressTableMounted):
         """Query the DB for all budget items and add them to the table."""
+        progress_data = self.data_handler.query_budget_progress_from_db()
+        self.budget_columns = event.table.add_columns(
+            "Goal", "Actual", "Difference", "Category", "Month/Year"
+        )
+        if progress_data:
+            event.table.add_rows(progres_data[0:])
 
     @on(BudgetCRUD.BudgetTableMounted)
     def get_all_budget_items(self, event: BudgetCRUD.BudgetTableMounted):
@@ -129,9 +140,15 @@ class Controller(App):
     @on(BudgetCRUD.StartBudgetItemUpdate)
     def items_to_update(self, event: BudgetCRUD.StartBudgetItemUpdate):
         """Send the row data to the BudgetCRUD screen to be updated."""
-        self.query_one("#update_item_id").value = str(event.row_data[0])
-        self.query_one("#update_item_category").value = str(event.row_data[1])
-        self.query_one("#update_item_goal").value = str(event.row_data[2])
+        self.query_one("#update_item_id", expect_type=Input).value = str(
+            event.row_data[0]
+        )
+        self.query_one("#update_item_category", expect_type=Select).value = str(
+            event.row_data[1]
+        )
+        self.query_one("#update_item_goal", expect_type=Input).value = str(
+            event.row_data[2]
+        )
 
     @on(BudgetCRUD.SaveBudgetItemUpdate)
     def budget_items_to_update(self, event: BudgetCRUD.SaveBudgetItemUpdate):
@@ -158,7 +175,7 @@ class Controller(App):
             amount=event.item_amount,
             active=event.active_status,
         )
-        table = self.query_one("#budget_data_table")
+        table = self.query_one("#budget_data_table", expect_type=DataTable)
         table.clear()
         table.add_rows(self.data_handler.query_active_budget_items_from_db()[0:])
 
@@ -171,18 +188,28 @@ class Controller(App):
     @on(BudgetProgress.CycleBackward)
     def handle_backward_cycle(self, event: BudgetProgress.CycleBackward):
         """Tell DataHandler/DB to move data by x months backwards in time"""
-        event.table.clear()
-        event.table.add_rows(
-            self.data_handler.cycle_months(number_of_months=event.number_of_months)
+        # event.table.clear()
+        new_data = self.data_handler.cycle_months(
+            number_of_months=event.number_of_months
         )
+
+        if len(new_data) >= 1:
+            event.table.clear(columns=False)
+            event.table.add_rows(new_data[0:])
+        else:
+            event.table.clear(columns=False)
 
     @on(BudgetProgress.CycleForward)
     def handle_forward_cycle(self, event: BudgetProgress.CycleForward):
         """Tell DataHandler/DB to move data by x months forward in time"""
-        event.table.clear()
-        event.table.add_rows(
-            self.data_handler.cycle_months(number_of_months=event.number_of_months)
+        new_data = self.data_handler.cycle_months(
+            number_of_months=event.number_of_months
         )
+        if len(new_data) >= 1:
+            event.table.clear(columns=False)
+            event.table.add_rows(new_data[0:])
+        else:
+            event.table.clear(columns=False)
 
     #############################################
     ############# Button Events #################
@@ -190,7 +217,7 @@ class Controller(App):
     @on(Button.Pressed, "#upload_transactions")
     def on_upload_dataframe(self):
         """Send filepath to DataHandler for uploading to database."""
-        filepath = Path(self.query_one("#file_name").value)
+        filepath = Path(self.query_one("#file_name", expect_type=Input).value)
         self.data_handler.upload_dataframe(filepath)
 
     @on(Button.Pressed, "#cancel")
@@ -223,3 +250,4 @@ if __name__ == "__main__":
     data_handler = DataHandler(model)
     app = Controller(model, data_handler)
     app.run()
+

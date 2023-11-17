@@ -1,33 +1,27 @@
 from textual.app import ComposeResult
-from textual.containers import Center, Grid, Vertical
+from textual.containers import Center, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Header, Static
-
-
-class Menu(Static):
-    def compose(self) -> ComposeResult:
-        yield Grid(
-            Vertical(
-                Button("Upload Transactions", id="upload", classes="mainmenu"),
-                Button("Categorize Transactions", id="categories", classes="mainmenu"),
-                Button("Budget Progress", id="budget_review", classes="mainmenu"),
-                classes="column",
-            ),
-            Vertical(
-                Button("Budget CRUD", id="budget_crud", classes="mainmenu"),
-                Button("Spending Statistics", id="stats", classes="mainmenu"),
-                Button("Quit", id="quit"),
-                classes="column",
-            ),
-        )
+from textual.widgets import Button, Footer, Header
 
 
 class HomeScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()
-        with Center():
-            yield Menu()
+        with Vertical(id="left_column", classes="mainmenu"):
+            with Center(id="left_center_menu"):
+                yield Button("Upload Transactions", id="upload", classes="mainmenu")
+                yield Button(
+                    "Categorize Transactions", id="categories", classes="mainmenu"
+                )
+                yield Button("Budget Progress", id="budget_review", classes="mainmenu")
+        with Vertical(id="right_column", classes="mainmenu"):
+            with Center(id="right_center_menu"):
+                yield Button("Budget CRUD", id="budget_crud", classes="mainmenu")
+                yield Button("Spending Statistics", id="stats", classes="mainmenu")
+                yield Button("Quit", id="quit")
 
     def on_mount(self) -> None:
         self.sub_title = "Home Screen"
+        self.query_one("Header", expect_type=Header).tall = True
+
