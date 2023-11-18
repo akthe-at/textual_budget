@@ -82,9 +82,7 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
 class Model:
     """Data model for the application."""
 
-    db_path: (
-        str
-    ) = "C:/Users/ARK010/Documents/textual_budget/textual_budget/model/dev.db"
+    db_path: (str) = "the_bank.db"
     con: Connection = sqlite3.connect(db_path)
     cursor: Cursor = con.cursor()
 
@@ -237,14 +235,12 @@ ORDER BY PostedDate DESC
         unprocessed_data = self.cursor.fetchall()
         return unprocessed_data
 
-    ####################
-    ####################
-    # BUDGET GOAL CRUD #
-    ####################
-    ####################
+        ####################
+        ####################
+        # BUDGET GOAL CRUD #
+        ####################
+        ####################
 
-    # BudgetGoals Schema = id, Category, Month, Year, Goal, Active
-    # cursor.execute('CREATE TABLE budget_goals (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT NOT NULL, month TEXT NOT NULL, year INTEGER NOT NULL, goal DECIMAL(10,2) NOT NULL, active BOOLEAN NOT NULL);')
     def delete_goal(self, id):
         """Delete a goal from the database."""
         try:
@@ -321,6 +317,21 @@ ORDER BY PostedDate DESC
         )
         self.con.commit()
         self.cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='trigger' AND name='deactivate_old_budget_goals'"
+        )
+        if self.cursor.fetchone() is None:
+            self.cursor.execute(
+                """
+                CREATE TRIGGER deactivate_old_budget_goals
+                AFTER INSERT ON `budget_goals` FOR EACH ROW
+                BEGIN
+                UPDATE budget_goals SET active = FALSE
+                WHERE category = NEW.category
+                AND NOT (id = NEW.id);
+                END
+            """
+            )
+        self.cursor.execute(
             """
             INSERT INTO budget_goals 
             (category, goal, active, date_added)
@@ -345,17 +356,6 @@ ORDER BY PostedDate DESC
             (category, goal, active, timestamp, id),
         )
         self.con.commit()
-
-        # !!! UPDATE OLD GOALS TRIGGER - this isn't actually suppposed to be a function, just run once
-        """
-        CREATE TRIGGER deactivate_old_budget_goals
-        AFTER INSERT ON `budget_goals` FOR EACH ROW
-        BEGIN
-        UPDATE budget_goals SET active = FALSE
-        WHERE category = NEW.category
-        AND NOT (id = NEW.id);
-        END
-        """
 
     ##########################
     ##########################

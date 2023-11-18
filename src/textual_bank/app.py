@@ -82,17 +82,18 @@ class Controller(App):
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
         """Query the DB for all unprocessed transactions and add them to the table."""
         unprocessed_data = self.data_handler.query_transactions_from_db()
-        self.transaction_columns = event.table.add_columns(
-            "AccountType",
-            "PostedDate",
-            "Amount",
-            "Description",
-            "Category",
-            "Balance",
-            "Processed",
-            "Flagged",
-        )
-        event.table.add_rows(unprocessed_data[0:])
+        if unprocessed_datA:
+            self.transaction_columns = event.table.add_columns(
+                "AccountType",
+                "PostedDate",
+                "Amount",
+                "Description",
+                "Category",
+                "Balance",
+                "Processed",
+                "Flagged",
+            )
+            event.table.add_rows(unprocessed_data[0:])
 
     @on(LabelTransactions.CategoryAccepted)
     def update_data_table(self, event: LabelTransactions.CategoryAccepted):
@@ -116,10 +117,10 @@ class Controller(App):
     def get_budget_progress_data(self, event: BudgetProgress.ProgressTableMounted):
         """Query the DB for all budget items and add them to the table."""
         progress_data = self.data_handler.query_budget_progress_from_db()
-        self.budget_columns = event.table.add_columns(
-            "Goal", "Actual", "Difference", "Category", "Month/Year"
-        )
         if progress_data:
+            self.budget_columns = event.table.add_columns(
+                "Goal", "Actual", "Difference", "Category", "Month/Year"
+            )
             event.table.add_rows(progres_data[0:])
 
     @on(BudgetCRUD.BudgetTableMounted)
@@ -176,7 +177,8 @@ class Controller(App):
             active=event.active_status,
         )
         table = self.query_one("#budget_data_table", expect_type=DataTable)
-        table.clear()
+        if table:
+            table.clear()
         table.add_rows(self.data_handler.query_active_budget_items_from_db()[0:])
 
     @on(BudgetCRUD.DeleteBudgetItem)
