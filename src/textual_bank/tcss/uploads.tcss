@@ -1,0 +1,69 @@
+UploadScreen {
+layout: grid;
+align: center middle;
+content-align: center middle;
+grid-size: 1 3;
+  }
+
+UploadScreen Header {
+    background: $surface-lighten-1;
+  }
+
+#first_block {
+  layout: grid;
+  grid-size: 2;
+  width: 1fr;
+  height: 1fr;
+  align: center middle;
+}
+
+UploadScreen #home {
+  background: $background-lighten-3;
+  width: 40%;
+  }
+
+#upload_prompt_button {
+  width: 40%;
+    background: $background-lighten-3;
+  }
+
+#second_block {
+  height: 1fr;
+  width: 1fr;
+  align-horizontal: center;
+  content-align: center middle;
+}
+
+#file_name {
+width: 50;
+margin: 1;
+text-align: center;
+}
+
+#upload_transactions {
+  width: 50;
+  margin: 1;
+  background: $background-lighten-3;
+}
+
+#tree_view {
+background: $background-lighten-2;
+}
+
+#file_tree_block {
+    width: 1fr;
+    height: 1fr;
+  }
+
+#tree_view .tree--guides {
+  color: white;
+}
+
+
+#tree_view .tree--cursor {
+  background: $panel-lighten-3;
+}
+
+UploadScreen Footer {
+    dock: bottom;
+  }

@@ -1,9 +1,11 @@
 import sqlite3
 from dataclasses import dataclass
 from sqlite3 import Connection, Cursor
+from typing import Union
 
 import numpy as np
 import pandas as pd
+from pandas.errors import DatabaseError
 
 
 def tweak_incoming_dataframe(df: pd.DataFrame):
@@ -12,6 +14,7 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
         Processed="No",
         Category=lambda x: np.select(
             [
+                (x.Description.str.contains("dividend paid", case=False)),
                 (x.Description.str.contains("netflix.com", case=False)),
                 (x.Description.str.contains("schnucks", case=False)),
                 (x.Description.str.contains("animal hospitals", case=False)),
@@ -35,6 +38,7 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
                 (x.Category.str.contains("Auto Insurance", case=False)),
             ],
             [
+                "Money towards savings",
                 "Netflix",
                 "Groceries/House Supplies",
                 "Dog",
@@ -78,17 +82,16 @@ def tweak_incoming_dataframe(df: pd.DataFrame):
 class Model:
     """Data model for the application."""
 
-    db_path: (
-        str
-    ) = "C:/Users/ARK010/Documents/textual_budget/textual_budget/model/dev.db"
+    db_path: (str) = "the_bank.db"
     con: Connection = sqlite3.connect(db_path)
     cursor: Cursor = con.cursor()
 
-    def upload_dataframe(self, filepath: str):
+    def upload_dataframe(self, filepath: str) -> bool:
         """Upload a csv file to the database."""
         df = pd.read_csv(filepath, parse_dates=["Posted Date"])
         df = (
-            df.rename(columns={"Posted Date": "PostedDate"})
+            df.loc[df["Posted Date"] >= "2023-09-01"]
+            .rename(columns={"Posted Date": "PostedDate"})
             .groupby(["Description", "PostedDate"])
             .agg("first")
         )
@@ -97,9 +100,12 @@ class Model:
         df_final.to_sql("MyAccounts", con=self.con, index=False, if_exists="append")
         return True
 
-    def compare_dataframes(self, df_new: pd.DataFrame):
+    def compare_dataframes(self, df_new: pd.DataFrame) -> pd.DataFrame:
         """Compares the two dataframes to avoid adding duplicate data"""
-        df_old = pd.read_sql("select * from MyAccounts", self.con)
+        try:
+            df_old = pd.read_sql("select * from MyAccounts", self.con)
+        except DatabaseError:
+            return df_new.reset_index()
         df_old = (
             df_old.assign(PostedDate=lambda x: pd.to_datetime(x.PostedDate))
             .groupby(["Description", "PostedDate"])
@@ -133,7 +139,8 @@ class Model:
         )
         try:
             self.cursor.execute(
-                """UPDATE MyAccounts
+                """
+                UPDATE MyAccounts
                 SET Processed = ?
                 WHERE Category = ?
                 AND Description = ?
@@ -228,14 +235,12 @@ ORDER BY PostedDate DESC
         unprocessed_data = self.cursor.fetchall()
         return unprocessed_data
 
-    ####################
-    ####################
-    # BUDGET GOAL CRUD #
-    ####################
-    ####################
+        ####################
+        ####################
+        # BUDGET GOAL CRUD #
+        ####################
+        ####################
 
-    # BudgetGoals Schema = id, Category, Month, Year, Goal, Active
-    # cursor.execute('CREATE TABLE budget_goals (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT NOT NULL, month TEXT NOT NULL, year INTEGER NOT NULL, goal DECIMAL(10,2) NOT NULL, active BOOLEAN NOT NULL);')
     def delete_goal(self, id):
         """Delete a goal from the database."""
         try:
@@ -312,6 +317,21 @@ ORDER BY PostedDate DESC
         )
         self.con.commit()
         self.cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='trigger' AND name='deactivate_old_budget_goals'"
+        )
+        if self.cursor.fetchone() is None:
+            self.cursor.execute(
+                """
+                CREATE TRIGGER deactivate_old_budget_goals
+                AFTER INSERT ON `budget_goals` FOR EACH ROW
+                BEGIN
+                UPDATE budget_goals SET active = FALSE
+                WHERE category = NEW.category
+                AND NOT (id = NEW.id);
+                END
+            """
+            )
+        self.cursor.execute(
             """
             INSERT INTO budget_goals 
             (category, goal, active, date_added)
@@ -337,22 +357,61 @@ ORDER BY PostedDate DESC
         )
         self.con.commit()
 
-        # !!! UPDATE OLD GOALS TRIGGER - this isn't actually suppposed to be a function, just run once
-        """
-        CREATE TRIGGER deactivate_old_budget_goals
-        AFTER INSERT ON `budget_goals` FOR EACH ROW
-        BEGIN
-        UPDATE budget_goals SET active = FALSE
-        WHERE category = NEW.category
-        AND NOT (id = NEW.id);
-        END
-        """
-
     ##########################
     ##########################
     ## CATEGORY AGGREGATION ##
     ##########################
     ##########################
+
+    def retrieve_month_bwd_progress(
+        self, number_of_months: int
+    ) -> list[Union[int, int, int, str, str]]:
+        self.cursor.execute(
+            """
+SELECT
+bg.goal as "Goal", 
+SUM(acct.Amount) as "Actual",
+SUM(acct.Amount) - bg.goal as "Difference",
+acct.Category, 
+strftime('%Y-%m', acct.PostedDate) 
+FROM MyAccounts acct 
+INNER JOIN budget_goals bg 
+    on bg.category = acct.Category 
+WHERE bg.active = 1 
+    and acct.Processed = 'Yes' 
+    and strftime('%Y-%m', date('now', '-' || ? || ' month')) = strftime('%Y-%m', acct.PostedDate)
+GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+order by strftime('%y-%m', acct.posteddate) desc, acct.category
+        """,
+            (str(number_of_months)),
+        )
+        items = self.cursor.fetchall()
+        return items
+
+    def retrieve_month_fwd_progress(
+        self, number_of_months: int
+    ) -> list[Union[int, int, int, str, str]]:
+        self.cursor.execute(
+            """
+select
+bg.goal as "goal", 
+sum(acct.amount) as "actual",
+sum(acct.amount) - bg.goal as "difference",
+acct.Category, 
+strftime('%Y-%m', acct.PostedDate) 
+FROM MyAccounts acct 
+INNER JOIN budget_goals bg 
+    on bg.category = acct.Category 
+WHERE bg.active = 1 
+    and acct.Processed = 'Yes' 
+    and strftime('%Y-%m', date('now', + ? || 'month')) = strftime('%Y-%m', acct.PostedDate)
+GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
+        """,
+            (str(number_of_months)),
+        )
+        items = self.cursor.fetchall()
+        return items
 
     def retrieve_budget_progress(self):
         self.cursor.execute(
@@ -396,3 +455,4 @@ ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
         )
         budget_progress = self.cursor.fetchall()
         return budget_progress
+

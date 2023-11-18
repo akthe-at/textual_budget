@@ -1,0 +1,73 @@
+CreateBudgetItem {
+    align-horizontal: center;
+  }
+CreateBudgetItem Header {
+    dock: top;
+    background: $surface-lighten-1;
+  }
+
+CreateBudgetItem Center {
+    align: center middle;
+    content-align: center middle;
+    layout: grid;
+    grid-size: 1;
+    width: 50%;
+    margin: 1;
+    grid-gutter: 1;
+  }
+
+CreateBudgetItem Select {
+    width: 1fr;
+  }
+
+CreateBudgetItem Input {
+    width: 1fr;
+  }
+
+CreateBudgetItem RadioButton {
+    width: 1fr;
+    align: center middle;
+  }
+
+CreateBudgetItem Button {
+    background: $surface-lighten-1;
+    width: 1fr;
+  }
+
+
+
+UpdateBudgetItem {
+    align-horizontal: center;
+  }
+UpdateBudgetItem Header {
+    dock: top;
+    background: $surface-lighten-1;
+  }
+
+UpdateBudgetItem Center {
+    align: center middle;
+    content-align: center middle;
+    layout: grid;
+    grid-size: 1;
+    width: 50%;
+    margin: 1;
+    grid-gutter: 1;
+  }
+
+UpdateBudgetItem Select {
+    width: 1fr;
+  }
+
+UpdateBudgetItem Input {
+    width: 1fr;
+  }
+
+UpdateBudgetItem RadioButton {
+    width: 1fr;
+    align: center middle;
+  }
+
+UpdateBudgetItem Button {
+    background: $surface-lighten-1;
+    width: 1fr;
+  }

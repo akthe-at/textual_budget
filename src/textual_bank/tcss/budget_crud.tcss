@@ -1,0 +1,74 @@
+BudgetCRUD {
+layout: grid;
+grid-size: 2;
+grid-gutter: 1;
+}
+
+
+#budget_crud_header {
+    column-span: 2;
+    background: $surface-lighten-1;
+    dock: top;
+  }
+
+Footer .footer--description {
+    background:$surface;
+  }
+
+Footer .footer--key {
+    background:$surface-lighten-1
+  }
+
+Footer .footer--highlight {
+    background:$secondary-background-darken-1
+  }
+
+Footer .footer--highlight-key {
+    background:$secondary-background-darken-1
+  }
+
+Footer {
+    column-span: 2;
+    background: $surface-lighten-1;
+}
+
+#budget_data_table_container {
+width: 1fr;
+}
+
+#budget_data_table .datatable--cursor {
+  background: $surface-lighten-3;
+}
+
+#budget_data_table .datatable--header {
+background: $panel-lighten-3
+}
+
+Center {
+width: auto;
+}
+
+#budget_progress_vertical {
+width: 1fr;
+align: center top;
+content-align: center middle;
+}
+
+.budget_crud Button {
+width: 1fr;
+align: center middle;
+background: $background-lighten-3;
+  }
+
+#first_center_bc {
+  align: center middle;
+  }
+
+#budget_crud_ruler_1 {
+width: 1fr;
+color: $panel-lighten-2;
+}
+
+#budget_crud_ruler_2 {
+color: $panel-lighten-2;
+}

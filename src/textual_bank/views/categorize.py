@@ -1,13 +1,13 @@
 from textual import on
 from textual.app import ComposeResult
+from textual.containers import Horizontal
 from textual.message import Message
+from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Header
-from textual_pandas.widgets import DataTable
+from textual.widgets import Button, DataTable, Footer, Header
+from textual.widgets.data_table import ColumnKey
 
 from views.cat_modal import CategorySelection
-
-# TODO: Need to implement the flagged status into the DataBase
 
 
 class LabelTransactions(Screen):
@@ -18,6 +18,7 @@ class LabelTransactions(Screen):
         ("a", "accept_transaction()", "Accept Transaction"),
         ("f", "flag_transaction()", "Flag Transaction"),
     }
+    transaction_columns: reactive[list[ColumnKey]] = reactive(default=list[ColumnKey])
 
     class TableMounted(Message):
         """Message to let app know that the datatable was mounted"""
@@ -56,12 +57,14 @@ class LabelTransactions(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()
-        yield Button(label="Go Back", variant="warning", id="home")
+        with Horizontal(id="categorize_first_block"):
+            yield Button(label="Go Back", id="home", classes="categorize")
         yield DataTable(id="transaction_data_table")
 
     def on_mount(self) -> None:
         self.sub_title = "Monitor Income/Expenditure Transactions"
-        self.table = self.query_one("#transaction_data_table")
+        self.query_one("Header", expect_type=Header).tall = True
+        self.table = self.query_one("#transaction_data_table", expect_type=DataTable)
         self.table.cursor_type = "row"
         self.post_message(self.TableMounted(self.table))
         self.table.focus()
@@ -70,7 +73,7 @@ class LabelTransactions(Screen):
         """Change the status of the selected transaction to processed."""
         self.table.update_cell(
             row_key=self.current_highlighted_row,
-            column_key=self.app.transaction_columns[6],
+            column_key=self.transaction_columns[6],
             value="Yes",
         )
 
@@ -78,9 +81,10 @@ class LabelTransactions(Screen):
         """Change the status of the selected transaction to flagged."""
         self.table.update_cell(
             row_key=self.current_highlighted_row,
-            column_key=self.app.transaction_columns[7],
+            column_key=self.transaction_columns[7],
             value="Flagged",
         )
+        self.table.refresh_row(self.table.get_row_index(self.current_highlighted_row))
 
     def action_accept_transaction(self):
         """Accept the selected transaction. Update UI & send message to update DB"""
@@ -123,3 +127,4 @@ class LabelTransactions(Screen):
             ),
             callback=self.update_data_table,
         )
+

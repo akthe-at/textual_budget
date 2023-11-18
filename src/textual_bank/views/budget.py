@@ -1,7 +1,7 @@
 from constants_cat import SELECT_OPTIONS
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Center, Vertical
 from textual.message import Message
 from textual.screen import Screen
 from textual.validation import Number
@@ -12,6 +12,7 @@ from textual.widgets import (
     Header,
     Input,
     RadioButton,
+    Rule,
     Select,
 )
 
@@ -21,7 +22,7 @@ class UpdateBudgetItem(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        with Vertical():
+        with Center():
             yield Input(id="update_item_id", disabled=True)
             yield Select(
                 options=SELECT_OPTIONS,
@@ -41,19 +42,20 @@ class UpdateBudgetItem(Screen):
 
     def on_mount(self) -> None:
         self.sub_title = "Update a Budget Item"
+        self.query_one("Header", expect_type=Header).tall = True
 
     @on(Button.Pressed, "#accept_budget_update")
     def on_accept(self):
         """Accept new budget item"""
         self.dismiss(
             result=[
-                self.query_one("#update_item_id").value,
-                self.query_one("#update_item_category").value,
-                self.query_one("#update_item_goal").value,
-                self.query_one("#update_item_status").value,
+                self.query_one(selector="#update_item_id", expect_type=Input).value,
+                self.query_one("#update_item_category", expect_type=Select).value,
+                self.query_one("#update_item_goal", expect_type=Input).value,
+                self.query_one("#update_item_status", expect_type=RadioButton).value,
             ]
         )
-        self.query_one("#update_item_status").value = False
+        self.query_one("#update_item_status", expect_type=RadioButton).value = False
 
 
 class CreateBudgetItem(Screen):
@@ -61,7 +63,7 @@ class CreateBudgetItem(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        with Vertical():
+        with Center():
             yield Select(
                 options=SELECT_OPTIONS, id="budget_item_category", prompt="Category"
             )
@@ -76,33 +78,49 @@ class CreateBudgetItem(Screen):
 
     def on_mount(self) -> None:
         self.sub_title = "Create a Budget Item"
+        self.query_one("Header", expect_type=Header).tall = True
 
     @on(Button.Pressed, "#create_item")
     def on_accept(self):
         """Accept new budget item"""
         self.dismiss(
             result=[
-                self.query_one("#budget_item_category").value,
-                self.query_one("#budget_item_amount").value,
-                self.query_one("#active_status_switch").value,
+                self.query_one("#budget_item_category", expect_type=Select).value,
+                self.query_one("#budget_item_amount", expect_type=Input).value,
+                self.query_one("#active_status_switch", expect_type=RadioButton).value,
             ]
         )
 
 
 class BudgetCRUD(Screen):
     def compose(self) -> ComposeResult:
-        yield Header()
-        yield Button(label="Go Back", variant="warning", id="home")
-        with Horizontal():
-            yield Button(
-                "Retrieve Current Budget Goals", id="retrieve_active_budget_items"
-            )
-            yield Button("Retrieve All Budget Goals", id="retrieve_all_budget_items")
-            yield Button("Create New Budget Goal", id="create_budget_item")
-            yield Button("Update Existing Budget Goal", id="update_budget_item")
-            yield Button("Delete Existing Budget Goal", id="delete_budget_item")
-        yield DataTable(id="budget_data_table")
+        yield Header(id="budget_crud_header", classes="budget_crud")
         yield Footer()
+        with Vertical(id="budget_progress_vertical", classes="budget_crud"):
+            with Center(id="first_center_bc"):
+                yield Button(
+                    label="Go Back", variant="default", id="home", classes="budget_crud"
+                )
+            with Center():
+                yield Rule(
+                    line_style="thick", id="budget_crud_ruler_1", classes="budget_crud"
+                )
+            with Center():
+                yield Button(
+                    "Retrieve Current Budget Goals", id="retrieve_active_budget_items"
+                )
+                yield Button(
+                    "Retrieve All Budget Goals", id="retrieve_all_budget_items"
+                )
+            yield Rule(
+                id="budget_crud_ruler_2", orientation="horizontal", line_style="thick"
+            )
+            with Center():
+                yield Button("Create New Budget Goal", id="create_budget_item")
+                yield Button("Update Existing Budget Goal", id="update_budget_item")
+                yield Button("Delete Existing Budget Goal", id="delete_budget_item")
+        with Vertical(id="budget_data_table_container", classes="budget_crud"):
+            yield DataTable(id="budget_data_table", classes="budget_crud")
 
     class BudgetTableMounted(Message):
         """Message to let app know that the datatable was mounted"""
@@ -131,7 +149,8 @@ class BudgetCRUD(Screen):
 
     def on_mount(self) -> None:
         self.sub_title = "Establish Budget"
-        self.table = self.query_one("#budget_data_table")
+        self.query_one("Header", expect_type=Header).tall = True
+        self.table = self.query_one("#budget_data_table", expect_type=DataTable)
         self.table.cursor_type = "row"
         self.post_message(self.BudgetTableMounted(table=self.table))
 
@@ -144,7 +163,7 @@ class BudgetCRUD(Screen):
         self.post_message(self.SaveBudgetItemUpdate(result=result, table=self.table))
 
     @on(Button.Pressed, "#delete_budget_item")
-    def delete_budget_item(self, event: Button.Pressed):
+    def delete_budget_item(self):
         """Delete the selected budget item"""
         self.post_message(
             self.DeleteBudgetItem(
@@ -155,12 +174,12 @@ class BudgetCRUD(Screen):
         )
 
     @on(Button.Pressed, "#retrieve_active_budget_items")
-    def retrieve_active_budget_items(self, event: Button.Pressed):
+    def retrieve_active_budget_items(self):
         """Retrieve all active budget items"""
         self.post_message(self.FilterBudgetTable(table=self.table, Active=True))
 
     @on(Button.Pressed, "#retrieve_all_budget_items")
-    def retrieve_all_budget_items(self, event: Button.Pressed):
+    def retrieve_all_budget_items(self):
         """Retrieve all budget items"""
         self.post_message(self.FilterBudgetTable(table=self.table, Active=False))
 
@@ -201,9 +220,10 @@ class BudgetCRUD(Screen):
         self.row_data = event.data_table.get_row(event.row_key)
 
     @on(Button.Pressed, "#update_budget_item")
-    def budget_update_screen(self, event: Button.Pressed):
+    def budget_update_screen(self):
         """Push the update budget item screen to the app."""
         self.post_message(self.StartBudgetItemUpdate(row_data=self.row_data))
         self.app.push_screen(
             screen=UpdateBudgetItem(), callback=self.update_budget_item
         )
+

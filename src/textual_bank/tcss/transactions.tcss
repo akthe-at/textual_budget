@@ -1,0 +1,75 @@
+CategorySelection Header {
+    dock: top;
+  }
+
+CategorySelection Footer {
+    dock: bottom;
+  }
+
+CategorySelection {
+  layout: grid;
+  grid-size: 2;
+  align: center middle;
+  content-align: center middle;
+}
+
+CategorySelection #accept {
+  background: $background-lighten-3
+  }
+
+CategorySelection #cancel {
+    background: $background-lighten-1;
+  }
+
+.categorize {
+    background: $background-lighten-3;
+
+  }
+
+#categorize_first_block {
+  height: 10%;
+  width: 1fr;
+}
+
+#transaction_data_table {
+  height: 1fr;
+}
+
+#transaction_data_table .datatable--cursor {
+  background: $surface-lighten-3;
+}
+
+#transaction_data_table .datatable--header {
+background: $panel-lighten-3
+}
+
+OptionList {
+    scrollbar-color: $surface-lighten-3;
+  }
+
+OptionList .option-list--option-highlighted {
+background: $boost-lighten-3;
+  }
+
+OptionList .option-list--option-hover-highlighted {
+    background: $boost-lighten-1;
+  }
+
+#category_list {
+width: 1fr;
+background: transparent;
+}
+
+#dialog {
+background: red 0%;
+width: auto;
+height: 25;
+}
+
+CategorySelection Button {
+    width: 50%;
+  }
+
+CategorySelection Container {
+    align: center middle;
+  }

@@ -1,0 +1,54 @@
+HomeScreen {
+    layout: grid;
+    grid-size: 2;
+  }
+
+LabelTransactions Header {
+  background: $surface-lighten-1;
+  }
+
+HomeScreen Header {
+    column_span: 2;
+    dock: top;
+    background: $surface-lighten-1;
+  }
+
+
+#left_column {
+width: auto;
+margin: 1;
+align: center middle;
+content-align: center middle;
+padding: 1;
+}
+
+#right_column {
+width: auto;
+margin: 1;
+align: center middle;
+content-align: center middle;
+padding: 1;
+}
+
+#right_center_menu {
+align-horizontal: left;
+content-align: center middle;
+width: 1fr;
+}
+
+
+#left_center_menu {
+align-horizontal: right;
+width: 1fr;
+}
+
+HomeScreen Button {
+  width: 75%;
+  text-align: center;
+  background: $background-lighten-3;
+
+  }
+
+
+
+
