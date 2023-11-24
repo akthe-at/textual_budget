@@ -1,4 +1,5 @@
 from pathlib import Path
+from sqlite3 import OperationalError
 
 from constants_app import SCREENS
 from data_handler import DataHandler
@@ -71,29 +72,35 @@ class Controller(App):
     @on(BudgetProgress.ProgressTableMounted)
     def get_aggregate_table_data(self, event: BudgetProgress.ProgressTableMounted):
         """Query the DB for all unprocessed transactions and add them to the table."""
-        progress_data = self.data_handler.query_budget_progress_from_db()
-        if progress_data:
-            event.table.add_columns(
-                "Goal", "Actual", "Difference", "Category", "Month/Year"
-            )
-            event.table.add_rows(progress_data[0:])
+        try:
+            progress_data = self.data_handler.query_budget_progress_from_db()
+            if progress_data:
+                event.table.add_columns(
+                    "Goal", "Actual", "Difference", "Category", "Month/Year"
+                )
+                event.table.add_rows(progress_data[0:])
+        except OperationalError:
+            self.push_screen("home")
 
     @on(LabelTransactions.TableMounted)
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
         """Query the DB for all unprocessed transactions and add them to the table."""
-        unprocessed_data = self.data_handler.query_transactions_from_db()
-        if unprocessed_datA:
-            self.transaction_columns = event.table.add_columns(
-                "AccountType",
-                "PostedDate",
-                "Amount",
-                "Description",
-                "Category",
-                "Balance",
-                "Processed",
-                "Flagged",
-            )
-            event.table.add_rows(unprocessed_data[0:])
+        try:
+            unprocessed_data = self.data_handler.query_transactions_from_db()
+            if unprocessed_data:
+                self.transaction_columns = event.table.add_columns(
+                    "AccountType",
+                    "PostedDate",
+                    "Amount",
+                    "Description",
+                    "Category",
+                    "Balance",
+                    "Processed",
+                    "Flagged",
+                )
+                event.table.add_rows(unprocessed_data[0:])
+        except OperationalError:
+            self.push_screen("home")
 
     @on(LabelTransactions.CategoryAccepted)
     def update_data_table(self, event: LabelTransactions.CategoryAccepted):
@@ -179,7 +186,10 @@ class Controller(App):
         table = self.query_one("#budget_data_table", expect_type=DataTable)
         if table:
             table.clear()
-        table.add_rows(self.data_handler.query_active_budget_items_from_db()[0:])
+        try:
+            table.add_rows(self.data_handler.query_active_budget_items_from_db()[0:])
+        except AttributeError:
+            self.push_screen("budget_crud")
 
     @on(BudgetCRUD.DeleteBudgetItem)
     def delete_budget_item(self, event: BudgetCRUD.DeleteBudgetItem):
