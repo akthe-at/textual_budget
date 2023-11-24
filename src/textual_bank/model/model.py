@@ -1,6 +1,6 @@
 import sqlite3
 from dataclasses import dataclass
-from sqlite3 import Connection, Cursor
+from sqlite3 import Connection, Cursor, OperationalError
 from typing import Union
 
 import numpy as np
@@ -216,22 +216,25 @@ class Model:
 
     def get_unprocessed_transactions(self):
         """Retrieve all unprocessed records from database."""
-        self.cursor.execute(
-            """
-SELECT
-    AccountType, 
-    strftime('%Y-%m-%d', PostedDate), 
-    Amount, 
-    Description, 
-    Category, 
-    Balance, 
-    Processed,
-    Flagged
-FROM MyAccounts 
-WHERE Processed = 'No'
-ORDER BY PostedDate DESC
-"""
-        )
+        try:
+            self.cursor.execute(
+                """
+    SELECT
+        AccountType, 
+        strftime('%Y-%m-%d', PostedDate), 
+        Amount, 
+        Description, 
+        Category, 
+        Balance, 
+        Processed,
+        Flagged
+    FROM MyAccounts 
+    WHERE Processed = 'No'
+    ORDER BY PostedDate DESC
+    """
+            )
+        except OperationalError:
+            return False
         unprocessed_data = self.cursor.fetchall()
         return unprocessed_data
 
@@ -259,25 +262,27 @@ ORDER BY PostedDate DESC
 
     def retrieve_all_goals(self):
         """Retrieve all goals from the database."""
-        self.cursor.execute(
-            """
-            SELECT
-                id,
-                category,
-                goal,
-                active,
-                date_added,
-                date_modified
-            FROM budget_goals
-            ORDER BY category, active DESC
-            """
-        )
+        try:
+            self.cursor.execute(
+                """
+                SELECT
+                    id,
+                    category,
+                    goal,
+                    active,
+                    date_added,
+                    date_modified
+                FROM budget_goals
+                ORDER BY category, active DESC
+                """
+            )
+        except (OperationalError, AttributeError):
+            return False
         goals = self.cursor.fetchall()
         return goals
 
     def retrieve_active_goals(self):
         """Retrieve all active goals from the database."""
-        # try to execuse the query, if it fails, do nothing
         try:
             self.cursor.execute(
                 """
@@ -293,11 +298,10 @@ ORDER BY PostedDate DESC
                 ORDER BY category, active DESC
                 """
             )
-
-            goals = self.cursor.fetchall()
-            return goals
-        except Exception:
-            pass
+        except (OperationalError, AttributeError):
+            return False
+        goals = self.cursor.fetchall()
+        return goals
 
     def insert_new_goals(
         self, category: str, amount: int, active: bool, timestamp: str
@@ -366,72 +370,81 @@ ORDER BY PostedDate DESC
     def retrieve_month_bwd_progress(
         self, number_of_months: int
     ) -> list[Union[int, int, int, str, str]]:
-        self.cursor.execute(
-            """
-SELECT
-bg.goal as "Goal", 
-SUM(acct.Amount) as "Actual",
-SUM(acct.Amount) - bg.goal as "Difference",
-acct.Category, 
-strftime('%Y-%m', acct.PostedDate) 
-FROM MyAccounts acct 
-INNER JOIN budget_goals bg 
-    on bg.category = acct.Category 
-WHERE bg.active = 1 
-    and acct.Processed = 'Yes' 
-    and strftime('%Y-%m', date('now', '-' || ? || ' month')) = strftime('%Y-%m', acct.PostedDate)
-GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
-order by strftime('%y-%m', acct.posteddate) desc, acct.category
-        """,
-            (str(number_of_months)),
-        )
+        try:
+            self.cursor.execute(
+                """
+    SELECT
+    bg.goal as "Goal", 
+    SUM(acct.Amount) as "Actual",
+    SUM(acct.Amount) - bg.goal as "Difference",
+    acct.Category, 
+    strftime('%Y-%m', acct.PostedDate) 
+    FROM MyAccounts acct 
+    INNER JOIN budget_goals bg 
+        on bg.category = acct.Category 
+    WHERE bg.active = 1 
+        and acct.Processed = 'Yes' 
+        and strftime('%Y-%m', date('now', '-' || ? || ' month')) = strftime('%Y-%m', acct.PostedDate)
+    GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+    order by strftime('%y-%m', acct.posteddate) desc, acct.category
+            """,
+                (str(number_of_months)),
+            )
+        except OperationalError:
+            return False
         items = self.cursor.fetchall()
         return items
 
     def retrieve_month_fwd_progress(
         self, number_of_months: int
     ) -> list[Union[int, int, int, str, str]]:
-        self.cursor.execute(
-            """
-select
-bg.goal as "goal", 
-sum(acct.amount) as "actual",
-sum(acct.amount) - bg.goal as "difference",
-acct.Category, 
-strftime('%Y-%m', acct.PostedDate) 
-FROM MyAccounts acct 
-INNER JOIN budget_goals bg 
-    on bg.category = acct.Category 
-WHERE bg.active = 1 
-    and acct.Processed = 'Yes' 
-    and strftime('%Y-%m', date('now', + ? || 'month')) = strftime('%Y-%m', acct.PostedDate)
-GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
-ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
-        """,
-            (str(number_of_months)),
-        )
+        try:
+            self.cursor.execute(
+                """
+    select
+    bg.goal as "goal", 
+    sum(acct.amount) as "actual",
+    sum(acct.amount) - bg.goal as "difference",
+    acct.Category, 
+    strftime('%Y-%m', acct.PostedDate) 
+    FROM MyAccounts acct 
+    INNER JOIN budget_goals bg 
+        on bg.category = acct.Category 
+    WHERE bg.active = 1 
+        and acct.Processed = 'Yes' 
+        and strftime('%Y-%m', date('now', + ? || 'month')) = strftime('%Y-%m', acct.PostedDate)
+    GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+    ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
+            """,
+                (str(number_of_months)),
+            )
+        except OperationalError:
+            return False
         items = self.cursor.fetchall()
         return items
 
     def retrieve_budget_progress(self):
-        self.cursor.execute(
-            """
-SELECT
-bg.goal as "Goal", 
-SUM(acct.Amount) as "Actual",
-SUM(acct.Amount) - bg.goal as "Difference",
-acct.Category, 
-strftime('%Y-%m', acct.PostedDate) 
-FROM MyAccounts acct 
-INNER JOIN budget_goals bg 
-    on bg.category = acct.Category 
-WHERE bg.active = 1 
-    and acct.Processed = 'Yes' 
-    and strftime('%Y-%m', date('now')) = strftime('%Y-%m', acct.PostedDate)
-GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
-ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
-"""
-        )
+        try:
+            self.cursor.execute(
+                """
+    SELECT
+    bg.goal as "Goal", 
+    SUM(acct.Amount) as "Actual",
+    SUM(acct.Amount) - bg.goal as "Difference",
+    acct.Category, 
+    strftime('%Y-%m', acct.PostedDate) 
+    FROM MyAccounts acct 
+    INNER JOIN budget_goals bg 
+        on bg.category = acct.Category 
+    WHERE bg.active = 1 
+        and acct.Processed = 'Yes' 
+        and strftime('%Y-%m', date('now')) = strftime('%Y-%m', acct.PostedDate)
+    GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+    ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
+    """
+            )
+        except OperationalError:
+            return False
         budget_progress = self.cursor.fetchall()
         return budget_progress
 
@@ -455,4 +468,3 @@ ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
         )
         budget_progress = self.cursor.fetchall()
         return budget_progress
-

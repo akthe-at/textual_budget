@@ -126,4 +126,3 @@ class DataHandler:
         elif number_of_months == 0:
             return self.model.retrieve_budget_progress()
         return self.model.retrieve_month_fwd_progress(number_of_months=number_of_months)
-
