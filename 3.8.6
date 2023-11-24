@@ -1,0 +1,269 @@
+Adding packages to default dependencies: aiohttp
+  Lock successful
+Changes are written to pyproject.toml.
+Synchronizing working set with resolved packages: 4 to add, 0 to update, 0 to remove
+
+  x Install multidict 6.0.4 failed
+  x Install yarl 1.9.2 failed
+  x Install frozenlist 1.4.0 failed
+  x Install aiohttp 3.8.6 failed
+Retry failed jobs
+  x Install multidict 6.0.4 failed
+  x Install yarl 1.9.2 failed
+  x Install frozenlist 1.4.0 failed
+  x Install aiohttp 3.8.6 failed
+
+ERRORS:
+add multidict failed:
+Traceback (most recent call last):
+  File 
+"C:\Users\ARK010\AppData\Local\miniconda3\Lib\concurrent\futures\thread.py", 
+line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\installers\sync
+hronizers.py", line 286, in install_candidate
+    self.manager.install(can)
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\installers\mana
+ger.py", line 33, in install
+    installer(str(prepared.build()), self.environment, prepared.direct_url())
+                  ^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\models\candidat
+es.py", line 404, in build
+    self.wheel = Path(builder.build(build_dir, 
+metadata_directory=self._metadata_dir))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\wheel.
+py", line 28, in build
+    filename = self._hook.build_wheel(out_dir, config_settings, 
+metadata_directory)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pyproject_hooks\_im
+pl.py", line 209, in build_wheel
+    return self._call_hook('build_wheel', {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pyproject_hooks\_im
+pl.py", line 311, in _call_hook
+    self._subprocess_runner(
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\base.p
+y", line 261, in subprocess_runner
+    return log_subprocessor(cmd, cwd, extra_environ=env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\base.p
+y", line 107, in log_subprocessor
+    raise build_error(e) from None
+pdm.exceptions.BuildError: Build backend raised error: Showing the last 10 
+lines of the build output:
+              even if it does not contain any `.py` files.
+              On the other hand, currently there is no concept of package data
+              directory, all directories are treated like packages.
+        ***********************************************************************
+*********
+
+!!
+  check.warn(importable)
+running build_ext
+building 'multidict._multidict' extension
+error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft
+C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+add yarl failed:
+Traceback (most recent call last):
+  File 
+"C:\Users\ARK010\AppData\Local\miniconda3\Lib\concurrent\futures\thread.py", 
+line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\installers\sync
+hronizers.py", line 286, in install_candidate
+    self.manager.install(can)
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\installers\mana
+ger.py", line 33, in install
+    installer(str(prepared.build()), self.environment, prepared.direct_url())
+                  ^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\models\candidat
+es.py", line 404, in build
+    self.wheel = Path(builder.build(build_dir, 
+metadata_directory=self._metadata_dir))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\wheel.
+py", line 28, in build
+    filename = self._hook.build_wheel(out_dir, config_settings, 
+metadata_directory)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pyproject_hooks\_im
+pl.py", line 209, in build_wheel
+    return self._call_hook('build_wheel', {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pyproject_hooks\_im
+pl.py", line 311, in _call_hook
+    self._subprocess_runner(
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\base.p
+y", line 261, in subprocess_runner
+    return log_subprocessor(cmd, cwd, extra_environ=env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\base.p
+y", line 107, in log_subprocessor
+    raise build_error(e) from None
+pdm.exceptions.BuildError: Build backend raised error: Showing the last 10 
+lines of the build output:
+warning: no previously-included files matching '*.cache' found anywhere in 
+distribution
+warning: no previously-included files found matching 'yarl\*.html'
+warning: no previously-included files found matching 'yarl\*.so'
+warning: no previously-included files found matching 'yarl\*.pyd'
+no previously-included directories found matching 'docs\_build'
+adding license file 'LICENSE'
+writing manifest file 'yarl.egg-info\SOURCES.txt'
+running build_ext
+building 'yarl._quoting_c' extension
+error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft
+C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+add frozenlist failed:
+Traceback (most recent call last):
+  File 
+"C:\Users\ARK010\AppData\Local\miniconda3\Lib\concurrent\futures\thread.py", 
+line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\installers\sync
+hronizers.py", line 286, in install_candidate
+    self.manager.install(can)
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\installers\mana
+ger.py", line 33, in install
+    installer(str(prepared.build()), self.environment, prepared.direct_url())
+                  ^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\models\candidat
+es.py", line 404, in build
+    self.wheel = Path(builder.build(build_dir, 
+metadata_directory=self._metadata_dir))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\wheel.
+py", line 28, in build
+    filename = self._hook.build_wheel(out_dir, config_settings, 
+metadata_directory)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pyproject_hooks\_im
+pl.py", line 209, in build_wheel
+    return self._call_hook('build_wheel', {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pyproject_hooks\_im
+pl.py", line 311, in _call_hook
+    self._subprocess_runner(
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\base.p
+y", line 261, in subprocess_runner
+    return log_subprocessor(cmd, cwd, extra_environ=env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\base.p
+y", line 107, in log_subprocessor
+    raise build_error(e) from None
+pdm.exceptions.BuildError: Build backend raised error: Showing the last 10 
+lines of the build output:
+warning: no previously-included files matching '*.dll' found anywhere in 
+distribution
+warning: no previously-included files matching '*.a' found anywhere in 
+distribution
+warning: no previously-included files matching '*.obj' found anywhere in 
+distribution
+warning: no previously-included files found matching 'frozenlist\*.html'
+no previously-included directories found matching 'docs\_build'
+adding license file 'LICENSE'
+writing manifest file 'frozenlist.egg-info\SOURCES.txt'
+running build_ext
+building 'frozenlist._frozenlist' extension
+error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft
+C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+add aiohttp failed:
+Traceback (most recent call last):
+  File 
+"C:\Users\ARK010\AppData\Local\miniconda3\Lib\concurrent\futures\thread.py", 
+line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\installers\sync
+hronizers.py", line 286, in install_candidate
+    self.manager.install(can)
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\installers\mana
+ger.py", line 33, in install
+    installer(str(prepared.build()), self.environment, prepared.direct_url())
+                  ^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\models\candidat
+es.py", line 404, in build
+    self.wheel = Path(builder.build(build_dir, 
+metadata_directory=self._metadata_dir))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\wheel.
+py", line 28, in build
+    filename = self._hook.build_wheel(out_dir, config_settings, 
+metadata_directory)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pyproject_hooks\_im
+pl.py", line 209, in build_wheel
+    return self._call_hook('build_wheel', {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pyproject_hooks\_im
+pl.py", line 311, in _call_hook
+    self._subprocess_runner(
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\base.p
+y", line 261, in subprocess_runner
+    return log_subprocessor(cmd, cwd, extra_environ=env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\ARK010\AppData\Roaming\pdm\venv\Lib\site-packages\pdm\builders\base.p
+y", line 107, in log_subprocessor
+    raise build_error(e) from None
+pdm.exceptions.BuildError: Build backend raised error: Showing the last 10 
+lines of the build output:
+warning: no previously-included files matching '*.dll' found anywhere in 
+distribution
+warning: no previously-included files matching '*.a' found anywhere in 
+distribution
+warning: no previously-included files matching '*.obj' found anywhere in 
+distribution
+warning: no previously-included files found matching 'aiohttp\*.html'
+no previously-included directories found matching 'docs\_build'
+adding license file 'LICENSE.txt'
+writing manifest file 'aiohttp.egg-info\SOURCES.txt'
+running build_ext
+building 'aiohttp._websocket' extension
+error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft
+C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
