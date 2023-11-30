@@ -1,8 +1,7 @@
 from pathlib import Path
-from sqlite3 import OperationalError
 
-from constants_app import SCREENS
 from data_handler import DataHandler
+from constants_app import SCREENS
 from model.model import Model
 from textual import events, on
 from textual.app import App, ComposeResult
@@ -72,14 +71,13 @@ class Controller(App):
     @on(BudgetProgress.ProgressTableMounted)
     def get_aggregate_table_data(self, event: BudgetProgress.ProgressTableMounted):
         """Query the DB for all unprocessed transactions and add them to the table."""
-        try:
-            progress_data = self.data_handler.query_budget_progress_from_db()
-            if progress_data:
-                event.table.add_columns(
-                    "Goal", "Actual", "Difference", "Category", "Month/Year"
-                )
-                event.table.add_rows(progress_data[0:])
-        except OperationalError:
+        progress_data = self.data_handler.query_budget_progress_from_db()
+        if progress_data:
+            event.table.add_columns(
+                "Goal", "Actual", "Difference", "Category", "Month/Year"
+            )
+            event.table.add_rows(progress_data[0:])
+        else:
             self.push_screen("home")
 
     @on(LabelTransactions.TableMounted)
@@ -100,7 +98,7 @@ class Controller(App):
                 )
                 event.table.add_rows(unprocessed_data[0:])
         except OperationalError:
-            self.push_screen("home")
+          self.push_screen("home")
 
     @on(LabelTransactions.CategoryAccepted)
     def update_data_table(self, event: LabelTransactions.CategoryAccepted):
@@ -128,7 +126,7 @@ class Controller(App):
             self.budget_columns = event.table.add_columns(
                 "Goal", "Actual", "Difference", "Category", "Month/Year"
             )
-            event.table.add_rows(progres_data[0:])
+            event.table.add_rows(progress_data[0:])
 
     @on(BudgetCRUD.BudgetTableMounted)
     def get_all_budget_items(self, event: BudgetCRUD.BudgetTableMounted):
@@ -172,8 +170,9 @@ class Controller(App):
             budget_items = self.data_handler.query_active_budget_items_from_db()
         else:
             budget_items = self.data_handler.query_budget_items_from_db()
-        event.table.clear()
-        event.table.add_rows(budget_items[0:])
+        if budget_items:
+            event.table.clear()
+            event.table.add_rows(budget_items[0:])
 
     @on(BudgetCRUD.SaveBudgetItem)
     def items_to_save(self, event: BudgetCRUD.SaveBudgetItem):
@@ -186,10 +185,9 @@ class Controller(App):
         table = self.query_one("#budget_data_table", expect_type=DataTable)
         if table:
             table.clear()
-        try:
             table.add_rows(self.data_handler.query_active_budget_items_from_db()[0:])
-        except AttributeError:
-            self.push_screen("budget_crud")
+        else:
+            self.push_screen("home")
 
     @on(BudgetCRUD.DeleteBudgetItem)
     def delete_budget_item(self, event: BudgetCRUD.DeleteBudgetItem):
@@ -205,11 +203,12 @@ class Controller(App):
             number_of_months=event.number_of_months
         )
 
-        if len(new_data) >= 1:
-            event.table.clear(columns=False)
-            event.table.add_rows(new_data[0:])
-        else:
-            event.table.clear(columns=False)
+        if new_data:
+            if len(new_data) >= 1:
+                event.table.clear(columns=False)
+                event.table.add_rows(new_data[0:])
+            else:
+                event.table.clear(columns=False)
 
     @on(BudgetProgress.CycleForward)
     def handle_forward_cycle(self, event: BudgetProgress.CycleForward):
@@ -217,11 +216,12 @@ class Controller(App):
         new_data = self.data_handler.cycle_months(
             number_of_months=event.number_of_months
         )
-        if len(new_data) >= 1:
-            event.table.clear(columns=False)
-            event.table.add_rows(new_data[0:])
-        else:
-            event.table.clear(columns=False)
+        if new_data:
+            if len(new_data) >= 1:
+                event.table.clear(columns=False)
+                event.table.add_rows(new_data[0:])
+            else:
+                event.table.clear(columns=False)
 
     #############################################
     ############# Button Events #################
@@ -252,7 +252,7 @@ class Controller(App):
         self.exit()
 
     @on(Button.Pressed, "#home")
-    def go_to_main_menu(self, event: Button.Pressed):
+    def go_to_main_menu(self):
         """Return to the main menu."""
         self.app.push_screen("home")
 
@@ -262,4 +262,3 @@ if __name__ == "__main__":
     data_handler = DataHandler(model)
     app = Controller(model, data_handler)
     app.run()
-
