@@ -221,10 +221,10 @@ class Model:
 SELECT
     AccountType, 
     strftime('%Y-%m-%d', PostedDate), 
-    Amount, 
+    Balance 
     Description, 
     Category, 
-    Balance, 
+    Amount,
     Processed,
     Flagged
 FROM MyAccounts 

@@ -91,10 +91,10 @@ class Controller(App):
                 self.transaction_columns = event.table.add_columns(
                     "AccountType",
                     "PostedDate",
-                    "Amount",
+                    "Balance",
                     "Description",
                     "Category",
-                    "Balance",
+                    "Amount",
                     "Processed",
                     "Flagged",
                 )
