@@ -216,16 +216,17 @@ class Model:
 
     def get_unprocessed_transactions(self):
         """Retrieve all unprocessed records from database."""
+
         try:
             self.cursor.execute(
                 """
     SELECT
         AccountType, 
         strftime('%Y-%m-%d', PostedDate), 
-        Amount, 
+        Balance, 
         Description, 
         Category, 
-        Balance, 
+        Amount, 
         Processed,
         Flagged
     FROM MyAccounts 
@@ -234,7 +235,7 @@ class Model:
     """
             )
         except OperationalError:
-            return False
+          return False
         unprocessed_data = self.cursor.fetchall()
         return unprocessed_data
 

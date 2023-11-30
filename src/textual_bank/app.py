@@ -83,21 +83,22 @@ class Controller(App):
     @on(LabelTransactions.TableMounted)
     def get_data_for_table(self, event: LabelTransactions.TableMounted):
         """Query the DB for all unprocessed transactions and add them to the table."""
-        unprocessed_data = self.data_handler.query_transactions_from_db()
-        if unprocessed_data:
-            self.transaction_columns = event.table.add_columns(
-                "AccountType",
-                "PostedDate",
-                "Amount",
-                "Description",
-                "Category",
-                "Balance",
-                "Processed",
-                "Flagged",
-            )
-            event.table.add_rows(unprocessed_data[0:])
-        else:
-            self.push_screen("home")
+        try:
+            unprocessed_data = self.data_handler.query_transactions_from_db()
+            if unprocessed_data:
+                self.transaction_columns = event.table.add_columns(
+                    "AccountType",
+                    "PostedDate",
+                    "Balance",
+                    "Description",
+                    "Category",
+                    "Amount",
+                    "Processed",
+                    "Flagged",
+                )
+                event.table.add_rows(unprocessed_data[0:])
+        except OperationalError:
+          self.push_screen("home")
 
     @on(LabelTransactions.CategoryAccepted)
     def update_data_table(self, event: LabelTransactions.CategoryAccepted):
