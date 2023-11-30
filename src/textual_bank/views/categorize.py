@@ -73,7 +73,7 @@ class LabelTransactions(Screen):
         """Change the status of the selected transaction to processed."""
         self.table.update_cell(
             row_key=self.current_highlighted_row,
-            column_key=self.transaction_columns[6],
+            column_key=self.app.transaction_columns[6],
             value="Yes",
         )
 
@@ -81,7 +81,7 @@ class LabelTransactions(Screen):
         """Change the status of the selected transaction to flagged."""
         self.table.update_cell(
             row_key=self.current_highlighted_row,
-            column_key=self.transaction_columns[7],
+            column_key=self.app.transaction_columns[7],
             value="Flagged",
         )
         self.table.refresh_row(self.table.get_row_index(self.current_highlighted_row))
