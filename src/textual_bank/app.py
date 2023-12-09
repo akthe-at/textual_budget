@@ -1,16 +1,17 @@
 from pathlib import Path
 
-from data_handler import DataHandler
-from constants_app import SCREENS
-from model.model import Model
+from sqlite3 import OperationalError
+from .data_handler import DataHandler
+from .constants_app import SCREENS
+from .model.model import Model
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
 from textual.widgets import Button, DataTable, Input, Select
-from views.budget import BudgetCRUD
-from views.budget_progress import BudgetProgress
-from views.categorize import LabelTransactions
-from views.main_screen import HomeScreen
+from .views.budget import BudgetCRUD
+from .views.budget_progress import BudgetProgress
+from .views.categorize import LabelTransactions
+from .views.main_screen import HomeScreen
 
 
 class Controller(App):
@@ -98,7 +99,7 @@ class Controller(App):
                 )
                 event.table.add_rows(unprocessed_data[0:])
         except OperationalError:
-          self.push_screen("home")
+            self.push_screen("home")
 
     @on(LabelTransactions.CategoryAccepted)
     def update_data_table(self, event: LabelTransactions.CategoryAccepted):
@@ -262,3 +263,4 @@ if __name__ == "__main__":
     data_handler = DataHandler(model)
     app = Controller(model, data_handler)
     app.run()
+
