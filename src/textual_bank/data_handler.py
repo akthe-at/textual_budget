@@ -1,7 +1,7 @@
-from typing import Any, Iterable
+from typing import Any, Iterable, Union
 from dataclasses import dataclass
 from datetime import datetime
-from model.model import Model
+from .model.model import Model
 from pathlib import Path
 
 
@@ -117,7 +117,7 @@ class DataHandler:
         else:
             print("Failed to Save new Budget Item to DB- From DataHandler")
 
-    def cycle_months(self, number_of_months: int) -> Iterable[Iterable[Any]]:
+    def cycle_months(self, number_of_months: int) -> list:
         """Cycle the progress table x months backward"""
         if number_of_months < 0:
             return self.model.retrieve_month_bwd_progress(
@@ -126,3 +126,4 @@ class DataHandler:
         elif number_of_months == 0:
             return self.model.retrieve_budget_progress()
         return self.model.retrieve_month_fwd_progress(number_of_months=number_of_months)
+
