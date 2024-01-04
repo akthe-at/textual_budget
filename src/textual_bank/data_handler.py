@@ -1,7 +1,7 @@
-from typing import Any, Iterable, Union
 from dataclasses import dataclass
 from datetime import datetime
-from .model.model import Model
+from typing import Iterable
+from textual_bank.model.model import Model
 from pathlib import Path
 
 
@@ -15,11 +15,11 @@ class DataHandler:
         """Query all unprocessed transactions from the database."""
         return self.model.get_unprocessed_transactions()
 
-    def query_budget_items_from_db(self) -> list[str, str, int, int, bool]:
+    def query_budget_items_from_db(self) -> list:
         """Query all budget items from the database."""
         return self.model.retrieve_all_goals()
 
-    def query_active_budget_items_from_db(self) -> list[str, str, int, int, bool]:
+    def query_active_budget_items_from_db(self) -> list | None:
         """Query all active budget items from the database."""
         return self.model.retrieve_active_goals()
 
@@ -27,8 +27,15 @@ class DataHandler:
         """Query all budget progress from the database."""
         return self.model.retrieve_budget_progress()
 
-    def delete_item_from_db(self, id):
-        """Delete a budget item from the database."""
+    def delete_item_from_db(self, id: int) -> bool | None:
+        """Delete a budget item from the database.
+
+        Args:
+        id (int): The id of the budget item to be deleted.
+
+        Returns:
+        True if the deletion was successful, None otherwise.
+        """
         success = self.model.delete_goal(id)
         if success:
             return True
@@ -80,7 +87,14 @@ class DataHandler:
         else:
             print("failed to update - from DataHandler")
 
-    def update_budget_item(self, row: list) -> bool | str:
+    def update_budget_item(self, row: list) -> bool | None:
+        """Update a budget item in the database.
+        Args:
+            row: A list containing the data to be updated.
+
+        Returns:
+        True if the update was successful, None otherwise.
+        """
         timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d")
         id = row[0]
         category = row[1]
