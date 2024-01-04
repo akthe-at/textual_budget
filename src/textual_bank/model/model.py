@@ -1,7 +1,7 @@
 from pathlib import Path
 import sqlite3
 from dataclasses import dataclass
-from sqlite3 import Connection, Cursor
+from sqlite3 import Connection, Cursor, OperationalError
 from typing import Union
 
 import numpy as np
@@ -456,26 +456,30 @@ class Model:
         return items
 
     def retrieve_budget_progress(self):
-        self.cursor.execute(
-            """
-        SELECT
-        bg.goal as "Goal", 
-        SUM(acct.Amount) as "Actual",
-        SUM(acct.Amount) - bg.goal as "Difference",
-        acct.Category, 
-        strftime('%Y-%m', acct.PostedDate) 
-        FROM MyAccounts acct 
-        INNER JOIN budget_goals bg 
-            on bg.category = acct.Category 
-        WHERE bg.active = 1 
-            and acct.Processed = 'Yes' 
-            and strftime('%Y-%m', date('now')) = strftime('%Y-%m', acct.PostedDate)
-        GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
-        ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
-"""
-        )
-        budget_progress = self.cursor.fetchall()
-        return budget_progress
+        try:
+            self.cursor.execute(
+                """
+            SELECT
+            bg.goal as "Goal", 
+            SUM(acct.Amount) as "Actual",
+            SUM(acct.Amount) - bg.goal as "Difference",
+            acct.Category, 
+            strftime('%Y-%m', acct.PostedDate) 
+            FROM MyAccounts acct 
+            INNER JOIN budget_goals bg 
+                on bg.category = acct.Category 
+            WHERE bg.active = 1 
+                and acct.Processed = 'Yes' 
+                and strftime('%Y-%m', date('now')) = strftime('%Y-%m', acct.PostedDate)
+            GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+            ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
+    """
+            )
+            budget_progress = self.cursor.fetchall()
+            return budget_progress
+        except OperationalError:
+            print("FAILED TO RETRIEVE BUDGET PROGRESS")
+            return False
 
     def retrieve_all_budget_progress(self):
         self.cursor.execute(
