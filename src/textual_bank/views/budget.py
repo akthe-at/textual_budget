@@ -1,4 +1,4 @@
-from constants_cat import SELECT_OPTIONS
+from textual_bank.constants_cat import SELECT_OPTIONS
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Center, Vertical
@@ -93,6 +93,12 @@ class CreateBudgetItem(Screen):
 
 
 class BudgetCRUD(Screen):
+    """Screen for CRUD operations on budget items
+    This screen is composed of two parts:
+    1. CRUD buttons
+    2. Budget Item Table
+    """
+
     def compose(self) -> ComposeResult:
         yield Header(id="budget_crud_header", classes="budget_crud")
         yield Footer()
@@ -123,7 +129,9 @@ class BudgetCRUD(Screen):
             yield DataTable(id="budget_data_table", classes="budget_crud")
 
     class BudgetTableMounted(Message):
-        """Message to let app know that the datatable was mounted"""
+        """Message to let app know that the datatable was mounted
+        so that it can be populated with data
+        """
 
         def __init__(self, table: DataTable):
             self.table = table
@@ -211,6 +219,7 @@ class BudgetCRUD(Screen):
 
     @on(Button.Pressed, "#create_budget_item")
     def budget_creation_screen(self):
+        """Push the create budget item screen to the app."""
         self.app.push_screen(screen=CreateBudgetItem(), callback=self.save_budget_item)
 
     @on(DataTable.RowHighlighted, "#budget_data_table")
