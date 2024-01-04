@@ -478,27 +478,31 @@ class Model:
             budget_progress = self.cursor.fetchall()
             return budget_progress
         except OperationalError:
-            print("FAILED TO RETRIEVE BUDGET PROGRESS")
+            print("FAILED TO RETRIEVE BUDGET PROGRESS TABLE")
             return False
 
     def retrieve_all_budget_progress(self):
-        self.cursor.execute(
-            """
-        SELECT
-        bg.goal as "Goal", 
-        SUM(acct.Amount) as "Actual",
-        SUM(acct.Amount) - bg.goal as "Difference",
-        acct.Category, 
-        strftime('%Y-%m', acct.PostedDate) 
-        FROM MyAccounts acct 
-        INNER JOIN budget_goals bg 
-            on bg.category = acct.Category 
-        WHERE bg.active = 1 
-            and acct.Processed = 'Yes' 
-        GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
-        ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
-    """
-        )
-        budget_progress = self.cursor.fetchall()
-        return budget_progress
+        try:
+            self.cursor.execute(
+                """
+            SELECT
+            bg.goal as "Goal", 
+            SUM(acct.Amount) as "Actual",
+            SUM(acct.Amount) - bg.goal as "Difference",
+            acct.Category, 
+            strftime('%Y-%m', acct.PostedDate) 
+            FROM MyAccounts acct 
+            INNER JOIN budget_goals bg 
+                on bg.category = acct.Category 
+            WHERE bg.active = 1 
+                and acct.Processed = 'Yes' 
+            GROUP BY acct.Category, strftime('%Y-%m', acct.PostedDate)
+            ORDER BY strftime('%Y-%m', acct.PostedDate) DESC, acct.Category
+        """
+            )
+            budget_progress = self.cursor.fetchall()
+            return budget_progress
+        except OperationalError:
+            print("FAILED TO RETRIEVE ALL BUDGET PROGRESS TABLE")
+            return False
 
