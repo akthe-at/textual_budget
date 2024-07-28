@@ -53,4 +53,3 @@ class UploadScreen(Screen):
             tree.display = True
         else:
             tree.display = False
-

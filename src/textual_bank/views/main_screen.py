@@ -5,6 +5,8 @@ from textual.widgets import Button, Footer, Header
 
 
 class HomeScreen(Screen):
+    """Home screen for the application"""
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()

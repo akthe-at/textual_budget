@@ -1,7 +1,8 @@
-from typing import Any, Iterable
 from dataclasses import dataclass
 from datetime import datetime
-from model.model import Model
+from types import CellType
+from typing import Any
+from textual_bank.model.model import Model
 from pathlib import Path
 
 
@@ -15,11 +16,11 @@ class DataHandler:
         """Query all unprocessed transactions from the database."""
         return self.model.get_unprocessed_transactions()
 
-    def query_budget_items_from_db(self) -> list[str, str, int, int, bool]:
+    def query_budget_items_from_db(self) -> list:
         """Query all budget items from the database."""
         return self.model.retrieve_all_goals()
 
-    def query_active_budget_items_from_db(self) -> list[str, str, int, int, bool]:
+    def query_active_budget_items_from_db(self) -> list[Any]:
         """Query all active budget items from the database."""
         return self.model.retrieve_active_goals()
 
@@ -27,8 +28,15 @@ class DataHandler:
         """Query all budget progress from the database."""
         return self.model.retrieve_budget_progress()
 
-    def delete_item_from_db(self, id):
-        """Delete a budget item from the database."""
+    def delete_item_from_db(self, id: int) -> bool | None:
+        """Delete a budget item from the database.
+
+        Args:
+        id (int): The id of the budget item to be deleted.
+
+        Returns:
+        True if the deletion was successful, None otherwise.
+        """
         success = self.model.delete_goal(id)
         if success:
             return True
@@ -41,7 +49,7 @@ class DataHandler:
         if success:
             return True
 
-    def update_category(self, new_category, row):
+    def update_category(self, new_category: str, row: list[Any]):
         """Update the category of a transaction based on user input."""
         old_category = row[4]
         description = row[3]
@@ -65,7 +73,7 @@ class DataHandler:
         else:
             print("Failed to close the database connection properly")
 
-    def update_processing_status(self, row, value):
+    def update_processing_status(self, row: list[CellType], value: str) -> bool | None:
         category = row[4]
         description = row[3]
         amount = row[2]
@@ -80,7 +88,14 @@ class DataHandler:
         else:
             print("failed to update - from DataHandler")
 
-    def update_budget_item(self, row: list) -> bool | str:
+    def update_budget_item(self, row: list) -> bool | None:
+        """Update a budget item in the database.
+        Args:
+            row: A list containing the data to be updated.
+
+        Returns:
+        True if the update was successful, None otherwise.
+        """
         timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d")
         id = row[0]
         category = row[1]
@@ -109,15 +124,17 @@ class DataHandler:
         else:
             print("failed to update - from DataHandler")
 
-    def save_new_budget_item(self, category, amount, active):
-        timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d")
+    def save_new_budget_item(self, category: str, amount: int, active: bool) -> bool:
+        timestamp: str = datetime.strftime(datetime.now(), "%Y-%m-%d")
         success = self.model.insert_new_goals(category, amount, active, timestamp)
         if success:
             return True
-        else:
-            print("Failed to Save new Budget Item to DB- From DataHandler")
+        print("Failed to Save new Budget Item to DB- From DataHandler")
+        return False
 
-    def cycle_months(self, number_of_months: int) -> Iterable[Iterable[Any]]:
+    def cycle_months(
+        self, number_of_months: int
+    ) -> list[tuple[int, int, int, str, str]] | None:
         """Cycle the progress table x months backward"""
         if number_of_months < 0:
             return self.model.retrieve_month_bwd_progress(
