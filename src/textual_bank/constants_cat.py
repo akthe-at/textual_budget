@@ -1,4 +1,4 @@
-SELECT_OPTIONS: list[tuple[str, str]] = [
+SELECT_OPTIONS: list[tuple] = [
     ("Discover Card", "Discover Card"),
     ("JPMorgan Chase - Mortgage", "JPMorgan Chase - Mortgage"),
     ("N. Student Loan Bill", "N. Student Loan Bill"),
@@ -30,4 +30,3 @@ SELECT_OPTIONS: list[tuple[str, str]] = [
     ("House Reno", "House Reno"),
     ("Medical", "Medical"),
 ]
-

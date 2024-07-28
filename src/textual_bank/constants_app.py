@@ -15,4 +15,3 @@ SCREENS = {
     "catpicker": CategorySelection,
     "new_budget_goal": CreateBudgetItem,
 }
-

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from sqlite3 import OperationalError
+from typing import Any
 from textual_bank.data_handler import DataHandler
 from constants_app import SCREENS
 from model.model import Model
@@ -15,6 +16,15 @@ from views.main_screen import HomeScreen
 
 
 class Controller(App):
+    """This is the main controller for the application. It handles all the events
+
+    Attributes:
+        model: The model object that handles the data.
+        data_handler: The interface to the database.
+        title: The title of the current screen.
+        sub_title: The sub title of the current screen.
+    """
+
     def __init__(self, model: Model, data_handler: DataHandler):
         super().__init__()
         self.model = model
@@ -34,6 +44,14 @@ class Controller(App):
     SHOW_TREE = var(True)
 
     def compose(self) -> ComposeResult:
+        """This is the main compose function for the application.
+
+        Returns:
+            The compose result for the current screen.
+
+        Yields:
+            The current screen.
+        """
         yield HomeScreen(id="home_screen")
 
     def on_mount(self) -> None:
@@ -57,8 +75,14 @@ class Controller(App):
     @on(LabelTransactions.ProcessingStatusChange)
     def update_processing_status_in_db(
         self, event: LabelTransactions.ProcessingStatusChange
-    ):
-        """Inform DataHandler of changes needed in the DB for processing status."""
+    ) -> None:
+        """Inform DataHandler of changes needed in the DB for processing status.
+
+        args:
+        event: The event that triggered the function call.
+        Returns:
+        None
+        """
         self.data_handler.update_processing_status(
             row=event.table.get_row(event.row_key),
             value=event.value,
@@ -69,6 +93,7 @@ class Controller(App):
         """Inform DataHandler of changes needed in the DB for flagged status."""
         self.data_handler.flag_transaction(row=event.table.get_row(event.row_key))
 
+    # Remember to do this
     @on(BudgetProgress.ProgressTableMounted)
     def get_aggregate_table_data(self, event: BudgetProgress.ProgressTableMounted):
         """Query the DB for all unprocessed transactions and add them to the table."""
@@ -130,9 +155,11 @@ class Controller(App):
             event.table.add_rows(progress_data[0:])
 
     @on(BudgetCRUD.BudgetTableMounted)
-    def get_all_budget_items(self, event: BudgetCRUD.BudgetTableMounted):
+    def get_all_budget_items(self, event: BudgetCRUD.BudgetTableMounted) -> None:
         """Query the DB for all budget items and add them to the table."""
-        budget_items = self.data_handler.query_active_budget_items_from_db()
+        budget_items: list[Any] | None = (
+            self.data_handler.query_active_budget_items_from_db()
+        )
         if budget_items:
             self.budget_columns = event.table.add_columns(
                 "ID",
@@ -162,7 +189,8 @@ class Controller(App):
         self.data_handler.update_budget_item(row=event.result)
         budget_items = self.data_handler.query_active_budget_items_from_db()
         event.table.clear()
-        event.table.add_rows(budget_items[0:])
+        if budget_items:
+            event.table.add_rows(budget_items[0:])
 
     @on(BudgetCRUD.FilterBudgetTable)
     def filter_budget_table(self, event: BudgetCRUD.FilterBudgetTable):
@@ -176,7 +204,7 @@ class Controller(App):
             event.table.add_rows(budget_items[0:])
 
     @on(BudgetCRUD.SaveBudgetItem)
-    def items_to_save(self, event: BudgetCRUD.SaveBudgetItem):
+    def items_to_save(self, event: BudgetCRUD.SaveBudgetItem) -> None:
         """Save the new budget item to the database."""
         self.data_handler.save_new_budget_item(
             category=event.item_category,
@@ -191,15 +219,14 @@ class Controller(App):
             self.push_screen("home")
 
     @on(BudgetCRUD.DeleteBudgetItem)
-    def delete_budget_item(self, event: BudgetCRUD.DeleteBudgetItem):
+    def delete_budget_item(self, event: BudgetCRUD.DeleteBudgetItem) -> None:
         """Delete a budget item from the database."""
         self.data_handler.delete_item_from_db(id=event.id)
         event.table.remove_row(event.row_key)
 
     @on(BudgetProgress.CycleBackward)
-    def handle_backward_cycle(self, event: BudgetProgress.CycleBackward):
+    def handle_backward_cycle(self, event: BudgetProgress.CycleBackward) -> None:
         """Tell DataHandler/DB to move data by x months backwards in time"""
-        # event.table.clear()
         new_data = self.data_handler.cycle_months(
             number_of_months=event.number_of_months
         )
@@ -214,15 +241,14 @@ class Controller(App):
     @on(BudgetProgress.CycleForward)
     def handle_forward_cycle(self, event: BudgetProgress.CycleForward):
         """Tell DataHandler/DB to move data by x months forward in time"""
-        new_data = self.data_handler.cycle_months(
-            number_of_months=event.number_of_months
+        new_data: list[tuple[int, int, int, str, str]] | None = (
+            self.data_handler.cycle_months(number_of_months=event.number_of_months)
         )
-        if new_data:
-            if len(new_data) >= 1:
-                event.table.clear(columns=False)
-                event.table.add_rows(new_data[0:])
-            else:
-                event.table.clear(columns=False)
+        if type(new_data) is list:
+            event.table.clear(columns=False)
+            event.table.add_rows(new_data[0:])
+        else:
+            event.table.clear(columns=False)
 
     #############################################
     ############# Button Events #################
@@ -263,4 +289,3 @@ if __name__ == "__main__":
     data_handler = DataHandler(model)
     app = Controller(model, data_handler)
     app.run()
-

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Iterable
+from types import CellType
+from typing import Any
 from textual_bank.model.model import Model
 from pathlib import Path
 
@@ -19,7 +20,7 @@ class DataHandler:
         """Query all budget items from the database."""
         return self.model.retrieve_all_goals()
 
-    def query_active_budget_items_from_db(self) -> list | None:
+    def query_active_budget_items_from_db(self) -> list[Any]:
         """Query all active budget items from the database."""
         return self.model.retrieve_active_goals()
 
@@ -48,7 +49,7 @@ class DataHandler:
         if success:
             return True
 
-    def update_category(self, new_category, row):
+    def update_category(self, new_category: str, row: list[Any]):
         """Update the category of a transaction based on user input."""
         old_category = row[4]
         description = row[3]
@@ -72,7 +73,7 @@ class DataHandler:
         else:
             print("Failed to close the database connection properly")
 
-    def update_processing_status(self, row, value):
+    def update_processing_status(self, row: list[CellType], value: str) -> bool | None:
         category = row[4]
         description = row[3]
         amount = row[2]
@@ -123,15 +124,17 @@ class DataHandler:
         else:
             print("failed to update - from DataHandler")
 
-    def save_new_budget_item(self, category, amount, active):
-        timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d")
+    def save_new_budget_item(self, category: str, amount: int, active: bool) -> bool:
+        timestamp: str = datetime.strftime(datetime.now(), "%Y-%m-%d")
         success = self.model.insert_new_goals(category, amount, active, timestamp)
         if success:
             return True
-        else:
-            print("Failed to Save new Budget Item to DB- From DataHandler")
+        print("Failed to Save new Budget Item to DB- From DataHandler")
+        return False
 
-    def cycle_months(self, number_of_months: int) -> list:
+    def cycle_months(
+        self, number_of_months: int
+    ) -> list[tuple[int, int, int, str, str]] | None:
         """Cycle the progress table x months backward"""
         if number_of_months < 0:
             return self.model.retrieve_month_bwd_progress(
@@ -140,4 +143,3 @@ class DataHandler:
         elif number_of_months == 0:
             return self.model.retrieve_budget_progress()
         return self.model.retrieve_month_fwd_progress(number_of_months=number_of_months)
-
