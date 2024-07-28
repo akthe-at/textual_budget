@@ -127,4 +127,3 @@ class LabelTransactions(Screen):
             ),
             callback=self.update_data_table,
         )
-
