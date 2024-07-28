@@ -17,4 +17,4 @@ distribution = true
 
 
 [project.scripts]
-prdb = "budget.server:main"
+budget = "textual_bank.server:main"
