@@ -9,11 +9,11 @@ from pandas.errors import DatabaseError
 
 
 def tweak_incoming_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-    """Clean up incoming DataFrame
+    """Clean up incoming DataFrame.
 
     Args:
     df (pd.DataFrame): Incoming DataFrame
-    
+
     >>> df = pd.DataFrame(
     ...     {
     ...         "Posted Date": ["2021-01-01", "2021-01-02", "2021-01-03"],
@@ -28,11 +28,11 @@ def tweak_incoming_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
         >>> tweak_incoming_dataframe(df)
         AccountNumber AccountType PostedDate  Amount Description Check Number  \
-        0            1    Checking 2021-01-01     1.0       desc1          NaN   
-        1            1    Checking 2021-01-02     2.0       desc2          NaN   
+        0            1    Checking 2021-01-01     1.0       desc1          NaN
+        1            1    Checking 2021-01-02     2.0       desc2          NaN
         2            1    Checking 2021-01-03     3.0       desc3          NaN
 
-        Balance Category Labels Note Processed Flagged 
+        Balance Category Labels Note Processed Flagged
         0      1.0     cat1            No
         1      2.0     cat2            No
         2      3.0     cat3            No
@@ -40,6 +40,7 @@ def tweak_incoming_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
     df (pd.DataFrame): Cleaned up DataFrame
+
     """
     return df.assign(
         Processed="No",
@@ -70,7 +71,8 @@ def tweak_incoming_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                 ),
                 (
                     x.Description.str.contains(
-                        "ach:jpmorgan chase -chase ach", case=False
+                        "ach:jpmorgan chase -chase ach",
+                        case=False,
                     ),
                     "JPMorgan Chase - Mortgage",
                 ),
@@ -123,12 +125,14 @@ def tweak_incoming_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 @dataclass
 class Model:
     """Data model for the application.
+
     Attributes:
     db_path (str): The path to the database.
     con (Connection): The connection to the database.
     cursor (Cursor): The cursor to the database.
 
         >>> model = Model()
+
     """
 
     db_path: str = "the_bank.db"
@@ -139,7 +143,7 @@ class Model:
         """Upload a csv file to the database."""
         df: pd.DataFrame = pd.read_csv(filepath, parse_dates=["Posted Date"])
         df_refined: pd.DataFrame = (
-            df.loc[df["Posted Date"] >= "2024-06-01"]
+            df.loc[df["Posted Date"] >= "2024-10-01"]
             .rename(columns={"Posted Date": "PostedDate"})
             .groupby(["Description", "PostedDate"])
             .agg("first")

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from types import CellType
 from typing import Any
-from textual_bank.model.model import Model
+from model.model import Model
 from pathlib import Path
 
 

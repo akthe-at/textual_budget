@@ -1,18 +1,19 @@
 from pathlib import Path
-
 from sqlite3 import OperationalError
 from typing import Any
-from textual_bank.data_handler import DataHandler
+
 from constants_app import SCREENS
 from model.model import Model
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.reactive import var
 from textual.widgets import Button, DataTable, Input, Select
-from textual_bank.views.budget import BudgetCRUD
 from views.budget_progress import BudgetProgress
 from views.categorize import LabelTransactions
 from views.main_screen import HomeScreen
+
+from data_handler import DataHandler
+from views.budget import BudgetCRUD
 
 
 class Controller(App):

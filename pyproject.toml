@@ -1,6 +1,6 @@
 [project]
 name = "textual_bank"
-version = "0.1.0"
+version = "0.1.5"
 description = ""
 authors = [{ name = "Adam K.", email = "arkelly2@medicine.wisc.edu" }]
 dependencies = ["textual>=0.74.0", "pandas>=2.2.2", "textual-serve>=1.0.3"]
@@ -10,10 +10,6 @@ license = { text = "MIT" }
 
 [tool.pdm.dev-dependencies]
 dev = ["textual-dev>=1.2.1", "pandas-stubs>=2.2.2.240603"]
-
-
-[tool.pdm]
-distribution = true
 
 
 [project.scripts]

@@ -1,4 +1,9 @@
-from textual_bank.constants_cat import SELECT_OPTIONS
+"""
+This module contains classes for creating, updating, and deleting budget items in a textual interface.
+It uses the textual library to create interactive screens for each operation.
+"""
+
+from constants_cat import SELECT_OPTIONS
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Center, Vertical
@@ -18,7 +23,7 @@ from textual.widgets import (
 
 
 class UpdateBudgetItem(Screen):
-    """Screen for updating a budget item"""
+    """Screen for updating a budget item."""
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -46,14 +51,14 @@ class UpdateBudgetItem(Screen):
 
     @on(Button.Pressed, "#accept_budget_update")
     def on_accept(self):
-        """Accept new budget item"""
+        """Accept new budget item."""
         self.dismiss(
             result=[
                 self.query_one(selector="#update_item_id", expect_type=Input).value,
                 self.query_one("#update_item_category", expect_type=Select).value,
                 self.query_one("#update_item_goal", expect_type=Input).value,
                 self.query_one("#update_item_status", expect_type=RadioButton).value,
-            ]
+            ],
         )
         self.query_one("#update_item_status", expect_type=RadioButton).value = False
 
@@ -65,7 +70,9 @@ class CreateBudgetItem(Screen):
         yield Header()
         with Center():
             yield Select(
-                options=SELECT_OPTIONS, id="budget_item_category", prompt="Category"
+                options=SELECT_OPTIONS,
+                id="budget_item_category",
+                prompt="Category",
             )
             yield Input(id="budget_item_amount", placeholder="Amount")
             yield RadioButton(
@@ -82,13 +89,13 @@ class CreateBudgetItem(Screen):
 
     @on(Button.Pressed, "#create_item")
     def on_accept(self):
-        """Accept new budget item"""
+        """Accept new budget item."""
         self.dismiss(
             result=[
                 self.query_one("#budget_item_category", expect_type=Select).value,
                 self.query_one("#budget_item_amount", expect_type=Input).value,
                 self.query_one("#active_status_switch", expect_type=RadioButton).value,
-            ]
+            ],
         )
 
 
@@ -96,7 +103,7 @@ class BudgetCRUD(Screen):
     """Screen for CRUD operations on budget items
     This screen is composed of two parts:
     1. CRUD buttons
-    2. Budget Item Table
+    2. Budget Item Table.
     """
 
     def compose(self) -> ComposeResult:
@@ -235,4 +242,3 @@ class BudgetCRUD(Screen):
         self.app.push_screen(
             screen=UpdateBudgetItem(), callback=self.update_budget_item
         )
-
