@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from types import CellType
-from typing import Any
+from typing import Any, Optional
 from model.model import Model
 from pathlib import Path
 
@@ -36,6 +36,7 @@ class DataHandler:
 
         Returns:
         True if the deletion was successful, None otherwise.
+
         """
         success = self.model.delete_goal(db_id)
         if success:
@@ -70,10 +71,10 @@ class DataHandler:
         description = row[3]
         amount = row[2]
         balance = row[5]
-        status = value
+        processed = value
         flagged = row[7]
         success = self.model.update_status(
-            category, description, amount, balance, status, flagged
+            category, description, amount, balance, processed, flagged
         )
         if success:
             return True
@@ -92,7 +93,7 @@ class DataHandler:
         db_id = row[0]
         category = row[1]
         goal = row[2]
-        active = row[3]
+        active: bool = row[3]
         success = self.model.update_existing_goals(
             category=category,
             goal=goal,
