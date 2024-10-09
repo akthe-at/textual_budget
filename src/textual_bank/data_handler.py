@@ -65,14 +65,6 @@ class DataHandler:
         if success:
             return True
 
-    def close_database_connection(self):
-        """Close the database connection."""
-        success = self.model.close_database_connection()
-        if success:
-            return True
-        else:
-            print("Failed to close the database connection properly")
-
     def update_processing_status(self, row: list[CellType], value: str) -> bool | None:
         category = row[4]
         description = row[3]
