@@ -274,9 +274,8 @@ class Controller(App):
         self.push_screen(screen=event.button.id)
 
     @on(Button.Pressed, "#quit")
-    def quit_buttons(self):
-        """Closes the application for any buttons with the id of quit."""
-        self.data_handler.close_database_connection()
+    def quit_buttons(self) -> None:
+        """Close the application for any buttons with the id of quit."""
         self.exit()
 
     @on(Button.Pressed, "#home")
