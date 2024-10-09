@@ -296,23 +296,23 @@ class Model:
         ####################
         ####################
 
-    def delete_goal(self, id):
+    def delete_goal(self, db_id: int) -> Literal[True]:
         """Delete a goal from the database."""
-        try:
-            self.cursor.execute(
-                """
-            DELETE FROM budget_goals
-            WHERE id = ?
-                """,
-                (id,),
-            )
-        except Exception:
-            self.con.rollback()
-            print("FAILED TO DELETE GOAL")
-        self.con.commit()
-        return True
-
-    def retrieve_all_goals(self):
+        with sqlite3.connect(self.db_path) as con:
+            cursor: Cursor = con.cursor()
+            try:
+                cursor.execute(
+                    """
+                DELETE FROM budget_goals
+                WHERE id = ?
+                    """,
+                    (db_id,),
+                )
+            except Exception:
+                con.rollback()
+                print("FAILED TO DELETE GOAL")
+            con.commit()
+            return True
         """Retrieve all goals from the database."""
         self.cursor.execute(
             """
@@ -398,21 +398,28 @@ class Model:
         self.con.commit()
 
     def update_existing_goals(
-        self, category: str, goal: int, active: bool, timestamp: str, id: int
+        self,
+        category: str,
+        goal: int,
+        active: bool,
+        timestamp: str,
+        db_id: int,
     ) -> None:
-        """Update existing goals"""
-        self.cursor.execute(
-            """
-        UPDATE budget_goals
-        SET category = ?,
-        goal = ?,
-        active = ?,
-        date_modified = ?
-        WHERE id = ?
-            """,
-            (category, goal, active, timestamp, id),
-        )
-        self.con.commit()
+        """Update existing goals."""
+        with sqlite3.connect(self.db_path) as con:
+            cursor: Cursor = con.cursor()
+            cursor.execute(
+                """
+            UPDATE budget_goals
+            SET category = ?,
+            goal = ?,
+            active = ?,
+            date_modified = ?
+            WHERE id = ?
+                """,
+                (category, goal, active, timestamp, db_id),
+            )
+            con.commit()
 
     ##########################
     ##########################

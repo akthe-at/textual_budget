@@ -28,16 +28,16 @@ class DataHandler:
         """Query all budget progress from the database."""
         return self.model.retrieve_budget_progress()
 
-    def delete_item_from_db(self, id: int) -> bool | None:
+    def delete_item_from_db(self, db_id: int) -> Optional[bool]:
         """Delete a budget item from the database.
 
         Args:
-        id (int): The id of the budget item to be deleted.
+        db_id (int): The id of the budget item to be deleted.
 
         Returns:
         True if the deletion was successful, None otherwise.
         """
-        success = self.model.delete_goal(id)
+        success = self.model.delete_goal(db_id)
         if success:
             return True
         else:
@@ -97,7 +97,7 @@ class DataHandler:
         True if the update was successful, None otherwise.
         """
         timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d")
-        id = row[0]
+        db_id = row[0]
         category = row[1]
         goal = row[2]
         active = row[3]
@@ -106,7 +106,7 @@ class DataHandler:
             goal=goal,
             active=active,
             timestamp=timestamp,
-            id=id,
+            db_id=db_id,
         )
         if success:
             return True
