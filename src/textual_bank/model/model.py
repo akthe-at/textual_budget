@@ -291,13 +291,13 @@ class Model:
                 """
             SELECT
             AccountType,
-            strftime('%Y-%m-%d', PostedDate),
-            Balance
-                Description,
-                Category,
-                Amount,
-                Processed,
-                Flagged
+            strftime('%Y-%m-%d', PostedDate) as  PostedDate,
+            Balance,
+            Description,
+            Category,
+            Amount,
+            Processed,
+            Flagged
             FROM MyAccounts
             WHERE Processed = 'No'
             ORDER BY PostedDate DESC
