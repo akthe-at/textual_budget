@@ -1,11 +1,11 @@
-from cmath import sqrt
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
-from sqlite3 import Connection, Cursor, OperationalError
-from typing import Any, Literal
+from sqlite3 import Cursor, OperationalError
+from typing import Any, Literal, Self
 
 import pandas as pd
+from pandas.core.dtypes.missing import NDFrame
 from pandas.errors import DatabaseError
 
 
