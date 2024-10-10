@@ -162,7 +162,10 @@ class Model:
         """Compare two dataframes to avoid adding duplicate data."""
         with sqlite3.connect(self.db_path) as con:
             try:
-                df_old: pd.DataFrame = pd.read_sql("select * from MyAccounts", con)
+                df_old: pd.DataFrame | pd.Series | NDFrame = pd.read_sql(
+                    "select * from MyAccounts",
+                    con,
+                )
             except DatabaseError:
                 return df_new.reset_index()
             df_old = (
