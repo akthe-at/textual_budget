@@ -142,21 +142,19 @@ class Model:
     def upload_dataframe(self, filepath: str | Path) -> bool:
         """Upload a csv file to the database."""
         with sqlite3.connect(self.db_path) as con:
-            df: pd.DataFrame = pd.read_csv(filepath, parse_dates=["Posted Date"])
-            print(df)
+            df: pd.DataFrame = pd.read_csv(
+                filepath,
+                parse_dates=["Posted Date"],
+                infer_datetime_format=True,
+            )
             df_refined: pd.DataFrame = (
-                df.loc[df["Posted Date"] >= "2024-10-01"]
+                df.loc[df["Posted Date"] >= pd.to_datetime("2024-10-01")]
                 .rename(columns={"Posted Date": "PostedDate"})
                 .groupby(["Description", "PostedDate"])
                 .agg("first")
             )
-            print(df_refined)  # -- NOT EMPTY
             df_filtered: pd.DataFrame = self.compare_dataframes(df_new=df_refined)
-            # EMPTY
-            print(df_filtered)
             df_final: pd.DataFrame = tweak_incoming_dataframe(df_filtered)
-            # EMPTY
-            print(df_final)
             df_final.to_sql("MyAccounts", con=con, index=False, if_exists="append")
             return True
 
