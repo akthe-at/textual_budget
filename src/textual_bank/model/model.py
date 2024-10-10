@@ -287,7 +287,7 @@ class Model:
         """Retrieve all unprocessed records from database."""
         with sqlite3.connect(self.db_path) as con:
             cursor: Cursor = con.cursor()
-            con.execute(
+            cursor.execute(
                 """
             SELECT
             AccountType,
