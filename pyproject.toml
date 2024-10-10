@@ -3,7 +3,12 @@ name = "textual_bank"
 version = "0.1.5"
 description = ""
 authors = [{ name = "Adam K.", email = "arkelly2@medicine.wisc.edu" }]
-dependencies = ["textual>=0.74.0", "pandas>=2.2.2", "textual-serve>=1.0.3"]
+dependencies = [
+    "textual>=0.74.0",
+    "pandas>=2.2.2",
+    "textual-serve>=1.0.3",
+    "pandas-stubs>=2.2.3.241009",
+]
 requires-python = ">=3.10, <3.13"
 readme = "README.md"
 license = { text = "MIT" }
