@@ -538,7 +538,8 @@ class Model:
                 print("FAILED TO RETRIEVE BUDGET PROGRESS TABLE")
                 return None
 
-    def retrieve_all_budget_progress(self):
+    def retrieve_all_budget_progress(self: Self) -> list[Any] | None:
+        """Query the db for budget progress data."""
         with sqlite3.connect(self.db_path) as con:
             cursor: Cursor = con.cursor()
         try:
