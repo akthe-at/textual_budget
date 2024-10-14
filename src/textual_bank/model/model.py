@@ -5,7 +5,6 @@ from sqlite3 import Cursor, OperationalError
 from typing import Any, Literal, Self
 
 import pandas as pd
-from pandas.core.dtypes.missing import NDFrame
 from pandas.errors import DatabaseError
 
 
@@ -162,7 +161,7 @@ class Model:
         """Compare two dataframes to avoid adding duplicate data."""
         with sqlite3.connect(self.db_path) as con:
             try:
-                df_old: pd.DataFrame | pd.Series | NDFrame = pd.read_sql(
+                df_old: pd.DataFrame | pd.Series | Any = pd.read_sql(
                     "select * from MyAccounts",
                     con,
                 )
