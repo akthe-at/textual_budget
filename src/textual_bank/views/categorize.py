@@ -28,9 +28,9 @@ class LabelTransactions(Screen):
             super().__init__()
 
     class CategoryAccepted(Message):
-        """Message to let app know that a category was accepted"""
+        """Message to let app know that a category was accepted."""
 
-        def __init__(self, category: str, row_key, table: DataTable):
+        def __init__(self, category: str, row_key, table: DataTable) -> None:
             self.category = category
             self.row_key = row_key
             self.table = table
