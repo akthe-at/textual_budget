@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from sqlite3 import OperationalError
-from typing import Any
+from typing import Any, Self
 
 from constants_app import SCREENS
 from data_handler import DataHandler
@@ -42,7 +42,10 @@ class Controller(App):
     ]
 
     SCREENS = SCREENS
-    BINDINGS = [("h", "action_push_screen('home')", "Home Page")]
+    BINDINGS = [
+        ("h", "action_push_screen('home')", "Home Page"),
+        ("q", "action_quit_app()", "Quit"),
+    ]
     SHOW_TREE = var(True)
 
     def compose(self) -> ComposeResult:
@@ -64,12 +67,16 @@ class Controller(App):
         if event.key == "h":
             self.push_screen("home")
 
+    def on_key(self, event: events.Key) -> None:
+        if event.key == "q":
+            self.exit()
+
     ####################################################################################
     ############### Event Handlers Below, Class Definitions above ######################
     ####################################################################################
 
     @on(Select.Changed, "#category_list")
-    def select_new_category(self, event: Select.Changed):
+    def select_new_category(self, event: Select.Changed) -> None:
         """When an option is selected, set category & set focus on the accept button."""
         self.new_category = event.value
         self.query_one("#accept").focus()
@@ -80,10 +87,12 @@ class Controller(App):
     ) -> None:
         """Inform DataHandler of changes needed in the DB for processing status.
 
-        args:
+        Args:
         event: The event that triggered the function call.
+
         Returns:
         None
+
         """
         self.data_handler.update_processing_status(
             row=event.table.get_row(event.row_key),
@@ -129,7 +138,9 @@ class Controller(App):
             self.push_screen("home")
 
     @on(LabelTransactions.CategoryAccepted)
-    def update_data_table(self, event: LabelTransactions.CategoryAccepted):
+    def update_data_table(
+        self: Self, event: LabelTransactions.CategoryAccepted
+    ) -> None:
         """Update the category of the selected row in the database."""
         self.data_handler.update_category(
             new_category=event.category,

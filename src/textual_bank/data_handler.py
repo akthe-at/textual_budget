@@ -1,14 +1,17 @@
+"""Module contains the DataHandler class, which acts as an interface."""
+
 from dataclasses import dataclass
 from datetime import datetime
-from types import CellType
-from typing import Any, Optional
-from model.model import Model
 from pathlib import Path
+from types import CellType
+from typing import Any, Optional, Self
+
+from model.model import Model
 
 
 @dataclass
 class DataHandler:
-    """An interface between the Model and the Controller"""
+    """An interface between the Model and the Controller."""
 
     model: Model
 
@@ -50,12 +53,12 @@ class DataHandler:
         if success:
             return True
 
-    def update_category(self, new_category: str, row: list[Any]):
+    def update_category(self: Self, new_category: str, row: list[Any]) -> bool:
         """Update the category of a transaction based on user input."""
         old_category = row[4]
         description = row[3]
-        amount = row[2]
-        balance = row[5]
+        amount = row[5]
+        balance = row[2]
         success = self.model.update_category(
             new_category,
             old_category,
@@ -63,23 +66,43 @@ class DataHandler:
             amount,
             balance,
         )
-        if success:
-            return True
 
-    def update_processing_status(self, row: list[CellType], value: str) -> bool | None:
+        if not success:
+            print("failed to update category - from DataHandler")
+        return success
+
+    def update_processing_status(
+        self: Self,
+        row: list[CellType],
+        value: str,
+    ) -> bool:
+        """Tell the model to update the processing status of a transaction.
+
+        Args:
+            row: A list containing the data to be updated.
+            value: The new processing status of the transaction.
+
+        Returns:
+        True if the update was successful, otherwise False.
+
+        """
         category = row[4]
         description = row[3]
-        amount = row[2]
-        balance = row[5]
+        amount = row[5]
+        balance = row[2]
         processed = value
         flagged = row[7]
         success = self.model.update_status(
-            category, description, amount, balance, processed, flagged
+            category,
+            description,
+            amount,
+            balance,
+            processed,
+            flagged,
         )
-        if success:
-            return True
-        else:
-            print("failed to update - from DataHandler")
+        if not success:
+            print("failed to update processing status - from DataHandler")
+        return success
 
     def update_budget_item(self, row: list) -> bool | None:
         """Update a budget item in the database.
@@ -109,8 +132,8 @@ class DataHandler:
     def flag_transaction(self, row):
         category = row[4]
         description = row[3]
-        amount = row[2]
-        balance = row[5]
+        amount = row[5]
+        balance = row[2]
         success = self.model.flag_transaction(category, description, amount, balance)
         if success:
             return True

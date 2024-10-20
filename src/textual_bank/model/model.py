@@ -189,11 +189,8 @@ class Model:
 
     def update_status(
         self, category, description, amount, balance, processed, flagged
-    ) -> Literal[True]:
+    ) -> bool:
         """Update the processing status of a transaction."""
-        print(
-            f"UPDATE STATUS: {category, description, amount, balance, processed, flagged}",  # noqa: E501
-        )
         with sqlite3.connect(self.db_path) as con:
             try:
                 cursor: Cursor = con.cursor()
@@ -216,12 +213,17 @@ class Model:
                         flagged,
                     ),
                 )
+                rows_changed = cursor.rowcount
                 con.commit()
-            except Exception:
-                con.rollback()
-                print("FAILED TO UPDATE CATEGORY")
-            return True
 
+
+                return True  # noqa: TRY300
+            except sqlite3.DatabaseError as e:
+                con.rollback()
+                print(f"FAILED TO UPDATE STATUS: {e}")
+                return False
+
+    # FIXME: Not curently saving after modifying.
     def flag_transaction(self, category, description, amount, balance) -> Literal[True]:
         """Update the processing status of a transaction."""
         with sqlite3.connect(self.db_path) as con:
@@ -246,13 +248,13 @@ class Model:
 
     # FIXME: Not curently saving after modifying.
     def update_category(
-        self,
+        self: Self,
         category: str,
         old_category: str,
         description: str,
         amount: float,
         balance: float,
-    ) -> Literal[True]:
+    ) -> bool:
         """Update the category of a transaction."""
         with sqlite3.connect(self.db_path) as con:
             cursor: Cursor = con.cursor()
@@ -276,12 +278,13 @@ class Model:
                     ),
                 )
                 con.commit()
-            except Exception:
+            except sqlite3.DatabaseError as e:
                 con.rollback()
                 # TODO: It could be good to have a text log window on the screen to
                 # print these errors?
                 # TODO: Part 2: Refactor either away from classes OR sep into a few more and adjust method locations.
-                print("FAILED TO UPDATE CATEGORY")
+                print("FAILED TO UPDATE CATEGORY", e)
+                return False
             return True
 
     def get_unprocessed_transactions(self) -> list[Any]:

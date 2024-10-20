@@ -1,7 +1,4 @@
-"""
-This module contains classes for creating, updating, and deleting budget items in a textual interface.
-It uses the textual library to create interactive screens for each operation.
-"""
+"""Module has classes for creating, updating, & deleting budget items w/ TUI."""
 
 from constants_cat import SELECT_OPTIONS
 from textual import on
@@ -39,9 +36,7 @@ class UpdateBudgetItem(Screen):
                 id="update_item_goal",
                 validators=[Number(failure_description="Please enter a number")],
             )
-            yield RadioButton(
-                value=False, label="Active Goal?", id="update_item_status"
-            )
+            yield RadioButton(value=True, label="Active Goal?", id="update_item_status")
             yield Button("Accept", id="accept_budget_update")
         yield Footer()
 
