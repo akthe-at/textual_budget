@@ -244,6 +244,7 @@ class Model:
                 print("FAILED TO UPDATE FLAG STATUS")
             return True
 
+    # FIXME: Not curently saving after modifying.
     def update_category(
         self,
         category: str,
@@ -279,6 +280,7 @@ class Model:
                 con.rollback()
                 # TODO: It could be good to have a text log window on the screen to
                 # print these errors?
+                # TODO: Part 2: Refactor either away from classes OR sep into a few more and adjust method locations.
                 print("FAILED TO UPDATE CATEGORY")
             return True
 
@@ -382,7 +384,7 @@ class Model:
         amount: int,
         active: bool,
         timestamp: str,
-    ):
+    ) -> None:
         """Insert new goals into the database."""
         with sqlite3.connect(self.db_path) as con:
             cursor: Cursor = con.cursor()
