@@ -216,7 +216,6 @@ class Model:
                 rows_changed = cursor.rowcount
                 con.commit()
 
-
                 return True  # noqa: TRY300
             except sqlite3.DatabaseError as e:
                 con.rollback()

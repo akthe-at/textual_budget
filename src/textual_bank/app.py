@@ -1,5 +1,6 @@
 """App module is the main controller for the application."""
 
+import typing
 from pathlib import Path
 from sqlite3 import OperationalError
 from typing import Any, Self
@@ -18,21 +19,23 @@ from views.main_screen import HomeScreen
 
 
 class Controller(App):
-    """This is the main controller for the application. It handles all the events
+    """The main controller for the application. It handles all the events.
 
     Attributes:
         model: The model object that handles the data.
         data_handler: The interface to the database.
         title: The title of the current screen.
         sub_title: The sub title of the current screen.
+
     """
 
-    def __init__(self, model: Model, data_handler: DataHandler):
+    def __init__(self, model: Model, data_handler: DataHandler) -> None:
+        """Initialize the controller with the model and data handler."""
         super().__init__()
         self.model = model
         self.data_handler = data_handler
 
-    CSS_PATH = [
+    CSS_PATH: typing.ClassVar = [
         "tcss/budget_crud.tcss",
         "tcss/main_menu.tcss",
         "tcss/transactions.tcss",
@@ -42,7 +45,7 @@ class Controller(App):
     ]
 
     SCREENS = SCREENS
-    BINDINGS = [
+    BINDINGS: typing.ClassVar = [
         ("h", "action_push_screen('home')", "Home Page"),
         ("q", "action_quit_app()", "Quit"),
     ]
@@ -56,6 +59,7 @@ class Controller(App):
 
         Yields:
             The current screen.
+
         """
         yield HomeScreen(id="home_screen")
 
@@ -83,7 +87,8 @@ class Controller(App):
 
     @on(LabelTransactions.ProcessingStatusChange)
     def update_processing_status_in_db(
-        self, event: LabelTransactions.ProcessingStatusChange
+        self,
+        event: LabelTransactions.ProcessingStatusChange,
     ) -> None:
         """Inform DataHandler of changes needed in the DB for processing status.
 
@@ -111,7 +116,11 @@ class Controller(App):
         progress_data = self.data_handler.query_budget_progress_from_db()
         if progress_data:
             event.table.add_columns(
-                "Goal", "Actual", "Difference", "Category", "Month/Year"
+                "Goal",
+                "Actual",
+                "Difference",
+                "Category",
+                "Month/Year",
             )
             event.table.add_rows(progress_data[0:])
         else:
@@ -139,7 +148,8 @@ class Controller(App):
 
     @on(LabelTransactions.CategoryAccepted)
     def update_data_table(
-        self: Self, event: LabelTransactions.CategoryAccepted
+        self: Self,
+        event: LabelTransactions.CategoryAccepted,
     ) -> None:
         """Update the category of the selected row in the database."""
         self.data_handler.update_category(
@@ -163,7 +173,11 @@ class Controller(App):
         progress_data = self.data_handler.query_budget_progress_from_db()
         if progress_data:
             self.budget_columns = event.table.add_columns(
-                "Goal", "Actual", "Difference", "Category", "Month/Year"
+                "Goal",
+                "Actual",
+                "Difference",
+                "Category",
+                "Month/Year",
             )
             event.table.add_rows(progress_data[0:])
 
@@ -188,13 +202,13 @@ class Controller(App):
     def items_to_update(self, event: BudgetCRUD.StartBudgetItemUpdate):
         """Send the row data to the BudgetCRUD screen to be updated."""
         self.query_one("#update_item_id", expect_type=Input).value = str(
-            event.row_data[0]
+            event.row_data[0],
         )
         self.query_one("#update_item_category", expect_type=Select).value = str(
-            event.row_data[1]
+            event.row_data[1],
         )
         self.query_one("#update_item_goal", expect_type=Input).value = str(
-            event.row_data[2]
+            event.row_data[2],
         )
 
     @on(BudgetCRUD.SaveBudgetItemUpdate)
@@ -241,7 +255,7 @@ class Controller(App):
     def handle_backward_cycle(self, event: BudgetProgress.CycleBackward) -> None:
         """Tell DataHandler/DB to move data by x months backwards in time"""
         new_data = self.data_handler.cycle_months(
-            number_of_months=event.number_of_months
+            number_of_months=event.number_of_months,
         )
 
         if new_data:
